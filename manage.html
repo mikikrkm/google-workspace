@@ -2267,15 +2267,21 @@ async function executeUpload() {
   let done = 0;
   let hasError = false;
 
-  for (const file of uploadFiles) {
-    try {
-      const rawPath = file._s3path || file.name;
-      const s3Key   = buildS3Key(rawPath);
-      await uploadFileToS3(file, s3Key);
-    } catch(e) {
-      console.error("アップロードエラー:", file.name, e);
-      hasError = true;
-    }
+for (const file of uploadFiles) {
+  try {
+    const rawPath = file._s3path || file.name;
+    const baseKey = buildS3Key(rawPath);
+
+    const s3Key = `${selectedCategory}/${baseKey}`; // ←ここ追加！
+
+    await uploadFileToS3(file, s3Key);
+
+  } catch(e) {
+    console.error("アップロードエラー:", file.name, e);
+    hasError = true;
+  }
+}
+console.log(selectedCategory);
     done++;
     const pct = Math.round((done / total) * 100);
     progressBar.style.width = pct + "%";
