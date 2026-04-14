@@ -1735,7 +1735,13 @@ body {
           <div class="file-browse-label" id="fileBrowseLabel">ファイルが選択されていません</div>
           <input type="file" id="fileInput" multiple accept="image/*,application/pdf,.html,.htm" style="display:none;" onchange="onFileInputChange(this.files)" />
         </div>
-
+        <!-- 切り替えタブ-->
+        <div class="tabs">
+          <button class="tab active" data-category="assets">素材</button>
+          <button class="tab" data-category="vi">VI管理</button>
+          <button class="tab" data-category="web">サイト</button>
+          <button class="tab" data-category="print">紙媒体</button>
+        </div>
         <!-- ドラッグ&ドロップエリア -->
         <div class="drop-zone" id="dropZone"
           onclick="document.getElementById('fileInput').click()"
@@ -1996,6 +2002,20 @@ let selectedItem   = null;
 let deleteMode     = "selected"; // "selected" | "all"
 let nextId         = 100;
 
+
+/* =====================================================
+   タブ選択
+===================================================== */
+let selectedCategory = "assets";
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    selectedCategory = tab.dataset.category;
+  });
+});
 /* =====================================================
    アップロードパネル
 ===================================================== */
