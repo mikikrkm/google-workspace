@@ -2253,14 +2253,16 @@ function collectFilesFromEntry(entry, path) {
 function buildS3Key(filePath) {
   var today = new Date().toISOString().slice(0, 10);
 
-  var parts = filePath.split("/").filter(p => p !== "" && p !== "C:" && p !== "fakepath");
+  var parts = filePath.split("/").filter(p => p && p !== "undefined");
 
-  if (parts.length === 0) return filePath;
+  if (parts.length === 0) {
+    return `${today}/${filePath}`;
+  }
 
   var folder = parts[0];
   var rest = parts.slice(1).join("/");
 
-  return folder + "_" + today + "/" + rest;
+  return `${folder}_${today}/${rest}`;
 }
 
 // アップロード実行（実API）
