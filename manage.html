@@ -2240,6 +2240,10 @@ function buildS3Key(filePath) {
   return folder + "_" + today + "/" + rest;
 }
 
+// アップロードタブ切り替え//
+const fullPath = `${selectedCategory}/${office}_${today}/${file.name}`;
+
+
 // アップロード実行（実API）
 async function executeUpload() {
   if (uploadFiles.length === 0) return;
