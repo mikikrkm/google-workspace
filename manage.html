@@ -2245,6 +2245,7 @@ const fullPath = `${selectedCategory}/${office}_${today}/${file.name}`;
 
 
 // アップロード実行（実API）
+let selectedCategory = "assets";
 async function executeUpload() {
   if (uploadFiles.length === 0) return;
   const btn = document.getElementById("uploadExecuteBtn");
@@ -2282,6 +2283,7 @@ for (const file of uploadFiles) {
   }
 }
 console.log(selectedCategory);
+
     done++;
     const pct = Math.round((done / total) * 100);
     progressBar.style.width = pct + "%";
