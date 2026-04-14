@@ -818,6 +818,29 @@ body {
   100% { background-position: -200% 0; }
 }
 
+/* ===== アップロードカテゴリタブ ===== */
+.tabs {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  max-width: 560px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.tab:hover { background: #f0f0f0; border-color: #aaa; }
+.tab.active { background: #e03030; color: white; border-color: #e03030; }
+
 /* ===== UPLOAD PANEL ===== */
 .upload-panel {
   display: none;
@@ -2240,12 +2263,7 @@ function buildS3Key(filePath) {
   return folder + "_" + today + "/" + rest;
 }
 
-// アップロードタブ切り替え//
-const fullPath = `${selectedCategory}/${office}_${today}/${file.name}`;
-
-
 // アップロード実行（実API）
-let selectedCategory = "assets";
 async function executeUpload() {
   if (uploadFiles.length === 0) return;
   const btn = document.getElementById("uploadExecuteBtn");
@@ -2268,22 +2286,16 @@ async function executeUpload() {
   let done = 0;
   let hasError = false;
 
-for (const file of uploadFiles) {
-  try {
-    const rawPath = file._s3path || file.name;
-    const baseKey = buildS3Key(rawPath);
-
-    const s3Key = `${selectedCategory}/${baseKey}`; // ←ここ追加！
-
-    await uploadFileToS3(file, s3Key);
-
-  } catch(e) {
-    console.error("アップロードエラー:", file.name, e);
-    hasError = true;
-  }
-}
-console.log(selectedCategory);
-
+  for (const file of uploadFiles) {
+    try {
+      const rawPath = file._s3path || file.name;
+      const baseKey = buildS3Key(rawPath);
+      const s3Key = `${selectedCategory}/${baseKey}`;
+      await uploadFileToS3(file, s3Key);
+    } catch(e) {
+      console.error("アップロードエラー:", file.name, e);
+      hasError = true;
+    }
     done++;
     const pct = Math.round((done / total) * 100);
     progressBar.style.width = pct + "%";
