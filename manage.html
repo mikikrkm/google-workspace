@@ -1297,6 +1297,16 @@ body {
     display: flex;
   }
 
+  /* アップロード画面表示中はリストパネルを非表示 */
+  .upload-mode .list-panel {
+    display: none;
+  }
+  /* アップロード画面表示中はプレビューパネルを全幅で常時表示 */
+  .upload-mode .preview-panel {
+    display: flex;
+    width: 100%;
+  }
+
   /* プレビュートップバーに「戻る」ボタン用スペース確保 */
   .preview-topbar {
     flex-wrap: wrap;
@@ -1999,10 +2009,10 @@ function openUploadPanel(){
   // サイドバーのアクティブ状態
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("navUpload").classList.add("active");
-  // スマホ時はプレビューパネルを表示
+  // スマホ時：upload-modeクラスでリストを非表示にしてアップロード画面のみ表示
   const isSp = window.matchMedia("(max-width: 767px)").matches;
   if(isSp){
-    document.getElementById("previewPanel").classList.add("sp-visible");
+    document.querySelector(".main-area").classList.add("upload-mode");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   // フォームリセット
@@ -2016,10 +2026,10 @@ function closeUploadPanel(){
   document.querySelector(".nav-item[href='manage.html']").classList.add("active");
   // 未選択状態に戻す
   document.getElementById("previewEmpty").style.display = "";
-  // スマホ時はプレビューパネルを非表示に戻す
+  // スマホ時：upload-modeクラスを除去してリストを再表示
   const isSp = window.matchMedia("(max-width: 767px)").matches;
   if(isSp){
-    document.getElementById("previewPanel").classList.remove("sp-visible");
+    document.querySelector(".main-area").classList.remove("upload-mode");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
