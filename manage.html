@@ -1323,22 +1323,99 @@ body {
     overflow-x: auto;
   }
 
-  /* アップロードフォームのパディングを縮小 */
-  .upload-form-area {
-    padding: 16px;
-    gap: 12px;
+  /* ---- アップロードパネル スマホ対応 ---- */
+
+  /* アップロードパネル全体：縦スクロール可能に */
+  .upload-panel {
+    overflow-y: auto;
+    min-height: 100vh;
   }
 
-  /* ドロップゾーンの高さを縮小 */
+  /* アップロードトップバー */
+  .upload-topbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .upload-topbar-title {
+    font-size: 13px;
+  }
+
+  /* フォームエリアのパディングを縮小 */
+  .upload-form-area {
+    padding: 14px 12px;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  /* ファイル参照行を縦積みに */
+  .file-browse-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    max-width: none;
+  }
+  .file-browse-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+  .file-browse-label {
+    text-align: center;
+    font-size: 12px;
+  }
+
+  /* ドロップゾーン：スマホではタップ操作に最適化 */
   .drop-zone {
-    min-height: 140px;
-    padding: 16px;
+    min-height: 130px;
+    padding: 20px 12px;
+    max-width: none;
+  }
+  .drop-zone-text {
+    font-size: 13px;
+  }
+  .drop-zone-sub {
+    font-size: 11px;
+  }
+
+  /* ファイルリスト */
+  .file-list-preview {
+    max-width: none;
+  }
+  .file-list-item {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  /* プログレスバー */
+  .upload-progress-wrap {
+    max-width: none;
+  }
+
+  /* アップロードボタン */
+  .upload-execute-btn {
+    max-width: none;
+    padding: 15px;
+    font-size: 15px;
+    border-radius: 10px;
   }
 
   /* アップロード完了・失敗画面のパディング縮小 */
   .upload-result,
   .upload-fail {
-    padding: 20px 16px;
+    padding: 24px 16px;
+    min-height: 60vh;
+  }
+
+  .upload-result-title,
+  .upload-fail-title {
+    font-size: 18px;
+  }
+
+  .upload-result-nuts,
+  .upload-fail-nuts {
+    width: 110px;
+    height: 110px;
   }
 
   /* アップロード完了ボタン群を縦積みに */
@@ -1354,6 +1431,8 @@ body {
   .upload-again-btn,
   .contact-admin-btn {
     justify-content: center;
+    padding: 13px 20px;
+    font-size: 14px;
   }
 
   /* モーダルのパディング調整 */
