@@ -1,0 +1,1 @@
+https://av45ti0j66.execute-api.ap-northeast-1.amazonaws.com/getUploadUrl

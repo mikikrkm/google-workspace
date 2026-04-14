@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>素材管理モック</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f5f6f8;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 900px;
+}
+
+/* 検索ラッパー（広め） */
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  color: #aaa;
+}
+.search {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+
+/* フィルターボタン（検索バー右隣） */
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+  flex-shrink: 0;
+}
+.filter-toggle-btn:hover {
+  background: #f0f0f0;
+  border-color: #aaa;
+}
+.filter-toggle-btn.active {
+  background: #555;
+  color: white;
+  border-color: #555;
+}
+
+/* プルダウン */
+.filter-select {
+  padding: 10px 30px 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.filter-select:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+
+/* カートボタン */
+.cart-btn {
+  background: #0066ff;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ===== TAGS ===== */
+.tags {
+  padding: 10px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tag {
+  background: #e8e8e8;
+  color: #444;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  border: 1px solid #d0d0d0;
+}
+.tag:hover { background: #d4d4d4; color: #222; }
+.tag.active { background: #555; color: white; border-color: #555; }
+
+/* ===== MAIN LAYOUT ===== */
+.main-layout {
+  display: flex;
+  position: relative;
+}
+
+/* ===== FILTER PANEL (左スライド) ===== */
+.filter-panel {
+  width: 0;
+  overflow: hidden;
+  background: #f0f0f0;
+  border-right: 0px solid #ddd;
+  transition: width 0.3s ease, border-width 0.3s ease;
+  flex-shrink: 0;
+  height: calc(100vh - 110px);
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+.filter-panel.open {
+  width: 240px;
+  border-right-width: 1px;
+}
+
+.filter-panel-inner {
+  width: 240px;
+  padding: 20px 16px;
+}
+
+.fp-section {
+  margin-bottom: 24px;
+}
+.fp-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* サブカテゴリ */
+.fp-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fp-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.fp-btn:hover { background: #e0e0e0; }
+.fp-btn.active { background: #555; color: white; border-color: #555; }
+
+/* 背景色ボタン */
+.bg-btn-group {
+  display: flex;
+  gap: 8px;
+}
+.bg-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.bg-btn:hover { background: #e0e0e0; }
+.bg-btn.active { background: #555; color: white; border-color: #555; }
+.bg-btn.transparent-btn {
+  background: repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 0 0 / 12px 12px;
+  color: #333;
+}
+.bg-btn.transparent-btn.active { outline: 2px solid #555; }
+
+/* カラーパレット */
+.color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: #333; transform: scale(1.15); }
+.color-swatch.clear {
+  background: white;
+  border: 2px solid #ccc;
+  position: relative;
+}
+.color-swatch.clear::after {
+  content: "×";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #aaa;
+  line-height: 24px;
+  text-align: center;
+}
+
+/* ===== GRID ===== */
+.grid-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ===== 検索結果バー ===== */
+.result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.result-count {
+  font-size: 13px;
+  color: #666;
+}
+.result-count strong {
+  color: #222;
+  font-size: 15px;
+}
+.result-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.per-page-label {
+  font-size: 12px;
+  color: #888;
+}
+.per-page-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.per-page-btn:hover { background: #f0f0f0; }
+.per-page-btn.active { background: #555; color: white; border-color: #555; }
+
+/* 検索結果共有ボタン */
+.share-search-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.share-search-btn:hover { background: #f0f0f0; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 12px 20px 20px;
+}
+.card {
+  position: relative;
+  background: white;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  border-radius: 6px;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+  transform: translateY(-2px);
+}
+.card img { width: 100%; display: block; aspect-ratio: 1; object-fit: cover; }
+
+.add-btn {
+  position: absolute;
+  top: 0; right: 0;
+  background: #0066ff;
+  color: white;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: 0.2s;
+  font-size: 18px;
+  border-bottom-left-radius: 6px;
+}
+.card:hover .add-btn { opacity: 1; }
+
+.type-label {
+  position: absolute;
+  bottom: 0; left: 0;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-top-right-radius: 6px;
+}
+
+/* ===== ページング ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 20px 24px;
+  flex-wrap: wrap;
+}
+.page-btn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) { background: #f0f0f0; border-color: #aaa; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+.page-btn.active { background: #0066ff; color: white; border-color: #0066ff; }
+.page-info {
+  font-size: 13px;
+  color: #888;
+  padding: 0 4px;
+}
+
+/* ===== 詳細ポップアップ ===== */
+.detail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 300;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.detail-overlay.open {
+  display: flex;
+}
+.detail-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+/* 詳細ヘッダー */
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.detail-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+.detail-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 18px;
+  transition: background 0.15s, color 0.15s;
+}
+.detail-close:hover { background: #f0f0f0; color: #333; }
+
+/* 詳細ボディ */
+.detail-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* プレビューエリア */
+.detail-preview {
+  flex: 1;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  min-height: 300px;
+}
+.detail-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.detail-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.detail-preview .pdf-viewer {
+  width: 100%;
+  height: 100%;
+}
+.preview-type-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+/* ダウンロードボタン（右下・青） */
+.preview-download-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: #0066ff;
+  color: white;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,102,255,0.4);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  z-index: 2;
+}
+.preview-download-btn:hover {
+  background: #0052cc;
+  transform: scale(1.08);
+  box-shadow: 0 5px 16px rgba(0,102,255,0.5);
+}
+.preview-download-btn svg { pointer-events: none; }
+
+/* サイドパネル */
+.detail-side {
+  width: 220px;
+  flex-shrink: 0;
+  border-left: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.detail-meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.detail-meta-value {
+  font-size: 13px;
+  color: #333;
+}
+
+.detail-divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 0;
+}
+
+/* カートに追加ボタン（サイド・控えめ） */
+.detail-cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.detail-cart-btn:hover {
+  background: #f5f5f5;
+  border-color: #aaa;
+  color: #222;
+}
+.detail-cart-btn.added {
+  background: #f0f0f0;
+  border-color: #bbb;
+  color: #888;
+}
+
+/* 共有ボタン（サイド） */
+.detail-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.detail-share-btn:hover {
+  background: #f5f5f5;
+  border-color: #aaa;
+  color: #222;
+}
+
+/* ===== MODAL (旧・未使用) ===== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+}
+
+/* ===== CART PANEL ===== */
+.cart-panel {
+  position: fixed;
+  right: 0; top: 0;
+  width: 320px;
+  height: 100%;
+  background: white;
+  border-left: 1px solid #ddd;
+  padding: 0;
+  transform: translateX(100%);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+}
+.cart-panel.active { transform: translateX(0); }
+
+.cart-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+.close-btn {
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.close-btn:hover { color: #333; }
+
+.cart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 16px 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+}
+.cart-count-badge {
+  background: #0066ff;
+  color: white;
+  font-size: 11px;
+  font-weight: normal;
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+
+#cartItems {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: #f5f6f8;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #444;
+  transition: background 0.15s;
+}
+.cart-item:hover { background: #eaecf0; }
+.cart-item input[type="checkbox"] {
+  accent-color: #0066ff;
+  width: 15px; height: 15px;
+  cursor: pointer; flex-shrink: 0;
+}
+.cart-item .item-thumb {
+  width: 40px; height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.cart-item .item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #555;
+}
+
+/* ===== アクションタブ ===== */
+.cart-tab-bar {
+  display: flex;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+.cart-tab {
+  flex: 1;
+  padding: 9px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.cart-tab:hover { color: #444; background: #f0f0f0; }
+.cart-tab.active { color: #0066ff; border-bottom-color: #0066ff; background: white; }
+
+.cart-tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  flex-shrink: 0;
+  border-top: 1px solid #eee;
+}
+.cart-tab-content.active { display: flex; }
+
+.cart-actions {
+  /* 後方互換のため残す（非表示） */
+  display: none;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: background 0.2s, transform 0.15s;
+  user-select: none;
+  border: none;
+  width: 100%;
+}
+.action-btn.gray {
+  background: #f0f0f0;
+  color: #444;
+  border: 1px solid #ddd;
+}
+.action-btn.gray:hover { background: #e0e0e0; }
+.action-btn.red {
+  background: white;
+  color: #e03030;
+  border: 1px solid #e03030;
+}
+.action-btn.red:hover { background: #fff0f0; transform: scale(1.01); }
+.action-btn.red-fill {
+  background: #e03030;
+  color: white;
+  border: 1px solid #e03030;
+}
+.action-btn.red-fill:hover { background: #c01010; transform: scale(1.01); }
+.action-btn.blue {
+  background: #0066ff;
+  color: white;
+  border: 1px solid #0066ff;
+}
+.action-btn.blue:hover { background: #0052cc; transform: scale(1.01); }
+
+.delete-btn {
+  background: #4a4a4a;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: background 0.25s, transform 0.15s;
+  user-select: none;
+}
+.delete-btn:hover { background: #e03030; transform: scale(1.02); }
+
+.download-btn {
+  background: #0066ff;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: background 0.2s, transform 0.15s;
+  user-select: none;
+}
+.download-btn:hover { background: #0052cc; transform: scale(1.02); }
+
+/* ===== カートボタンエリア（シンプル版） ===== */
+.cart-actions-simple {
+  padding: 12px 16px 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.cart-dl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #0066ff;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+.cart-dl-btn:hover { background: #0052cc; }
+
+.cart-del-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #e03030;
+  background: white;
+  color: #e03030;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.cart-del-btn:hover { background: #fff0f0; }
+
+/* ===== ローディング ===== */
+.card-skeleton {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-bar {
+  height: 10px;
+  margin: 8px 10px 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  width: 60%;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 詳細プレビューのローディングスピナー */
+.preview-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  z-index: 1;
+}
+.spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #ddd;
+  border-top-color: #0066ff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== トースト ===== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #222;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 24px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== レスポンシブ ===== */
+@media (max-width: 600px) {
+  .detail-body {
+    flex-direction: column;
+  }
+  .detail-side {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eee;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px;
+    gap: 8px;
+  }
+  .detail-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .detail-meta-row {
+    min-width: 80px;
+  }
+  .detail-cart-btn,
+  .detail-share-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+  .detail-divider { display: none; }
+  .detail-preview {
+    min-height: 220px;
+  }
+  .header-left {
+    max-width: 100%;
+  }
+  .filter-select { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <!-- 検索窓（広め） -->
+    <div class="search-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+      </svg>
+      <input class="search" id="searchInput" placeholder="キーワードを入力（例：桜　イラスト）" oninput="onSearchInput(this.value)" />
+    </div>
+
+    <!-- 絞り込みボタン（検索バー右隣） -->
+    <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="8" y1="12" x2="20" y2="12"/>
+        <line x1="12" y1="18" x2="20" y2="18"/>
+      </svg>
+      絞り込み
+    </button>
+
+    <!-- 種別プルダウン -->
+    <select class="filter-select" id="typeFilter" onchange="applyFilters()">
+      <option value="all">すべて</option>
+      <option value="image">画像</option>
+      <option value="print">紙媒体</option>
+      <option value="site">サイト</option>
+      <option value="other">その他</option>
+    </select>
+  </div>
+
+  <!-- カートボタン -->
+  <div class="cart-btn" onclick="toggleCart()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    <span id="count">0</span>
+  </div>
+</div>
+
+<!-- タグ -->
+<div class="tags">
+  <div class="tag" onclick="filterTag('食事', event)">食事</div>
+  <div class="tag" onclick="filterTag('介助', event)">介助</div>
+  <div class="tag" onclick="filterTag('車椅子', event)">車椅子</div>
+  <div class="tag" onclick="filterTag('リハビリ', event)">リハビリ</div>
+  <div class="tag" onclick="filterTag('会話', event)">会話</div>
+  <div class="tag" onclick="filterTag('all', event)">ALL</div>
+</div>
+
+<!-- メインレイアウト -->
+<div class="main-layout">
+
+  <!-- 左フィルターパネル -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-panel-inner">
+
+      <!-- サブカテゴリ -->
+      <div class="fp-section">
+        <div class="fp-title">サブカテゴリ</div>
+        <div class="fp-btn-group" id="subcatGroup">
+          <div class="fp-btn active" data-subcat="all" onclick="setSubcat('all', this)">すべて</div>
+          <div class="fp-btn" data-subcat="photo" onclick="setSubcat('photo', this)">写真</div>
+          <div class="fp-btn" data-subcat="illust" onclick="setSubcat('illust', this)">イラスト</div>
+          <div class="fp-btn" data-subcat="apbook" onclick="setSubcat('apbook', this)">APブック</div>
+          <div class="fp-btn" data-subcat="flyer" onclick="setSubcat('flyer', this)">チラシ</div>
+          <div class="fp-btn" data-subcat="lp" onclick="setSubcat('lp', this)">LP</div>
+        </div>
+      </div>
+
+      <!-- 背景色 -->
+      <div class="fp-section">
+        <div class="fp-title">背景色</div>
+        <div class="bg-btn-group" id="bgGroup">
+          <div class="bg-btn active" data-bg="all" onclick="setBg('all', this)">すべて</div>
+          <div class="bg-btn transparent-btn" data-bg="transparent" onclick="setBg('transparent', this)"></div>
+          <div class="bg-btn" data-bg="white" onclick="setBg('white', this)" style="background:white;">白</div>
+        </div>
+      </div>
+
+      <!-- カラーパレット -->
+      <div class="fp-section">
+        <div class="fp-title">カラー</div>
+        <div class="color-palette" id="colorPalette">
+          <div class="color-swatch clear" data-color="all" onclick="setColor('all', this)" title="クリア"></div>
+          <div class="color-swatch" data-color="red"    onclick="setColor('red', this)"    style="background:#e74c3c;" title="赤"></div>
+          <div class="color-swatch" data-color="orange" onclick="setColor('orange', this)" style="background:#e67e22;" title="オレンジ"></div>
+          <div class="color-swatch" data-color="yellow" onclick="setColor('yellow', this)" style="background:#f1c40f;" title="黄"></div>
+          <div class="color-swatch" data-color="green"  onclick="setColor('green', this)"  style="background:#2ecc71;" title="緑"></div>
+          <div class="color-swatch" data-color="blue"   onclick="setColor('blue', this)"   style="background:#3498db;" title="青"></div>
+          <div class="color-swatch" data-color="purple" onclick="setColor('purple', this)" style="background:#9b59b6;" title="紫"></div>
+          <div class="color-swatch" data-color="pink"   onclick="setColor('pink', this)"   style="background:#e91e8c;" title="ピンク"></div>
+          <div class="color-swatch" data-color="brown"  onclick="setColor('brown', this)"  style="background:#795548;" title="茶"></div>
+          <div class="color-swatch" data-color="gray"   onclick="setColor('gray', this)"   style="background:#95a5a6;" title="グレー"></div>
+          <div class="color-swatch" data-color="black"  onclick="setColor('black', this)"  style="background:#2c3e50;" title="黒"></div>
+          <div class="color-swatch" data-color="white"  onclick="setColor('white', this)"  style="background:white; border:2px solid #ccc;" title="白"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- グリッドエリア -->
+  <div class="grid-area">
+    <!-- 検索結果バー -->
+    <div class="result-bar" id="resultBar">
+      <div class="result-count" id="resultCount"></div>
+      <div class="result-controls">
+        <span class="per-page-label">表示件数：</span>
+        <div class="per-page-btn active" data-n="20" onclick="setPerPage(20, this)">20件</div>
+        <div class="per-page-btn" data-n="50" onclick="setPerPage(50, this)">50件</div>
+        <div class="share-search-btn" onclick="shareSearch()" title="検索結果を共有">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          共有
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <!-- ページング -->
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+</div>
+
+<!-- ===== 詳細ポップアップ ===== -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetailOnOverlay(event)">
+  <div class="detail-modal" id="detailModal">
+    <!-- ヘッダー -->
+    <div class="detail-header">
+      <div class="detail-title" id="detailTitle">素材詳細</div>
+      <div class="detail-close" onclick="closeDetail()" title="閉じる">✕</div>
+    </div>
+    <!-- ボディ -->
+    <div class="detail-body">
+      <!-- プレビュー -->
+      <div class="detail-preview" id="detailPreview">
+        <!-- JS で中身を差し替え -->
+        <div class="preview-type-badge" id="previewTypeBadge"></div>
+        <!-- ダウンロードボタン（右下・青） -->
+        <div class="preview-download-btn" id="previewDownloadBtn" onclick="downloadItem()" title="ダウンロード">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+      </div>
+      <!-- サイドパネル -->
+      <div class="detail-side">
+        <div class="detail-meta" id="detailMeta"></div>
+        <hr class="detail-divider">
+        <!-- カートに追加 -->
+        <div class="detail-cart-btn" id="detailCartBtn" onclick="addToCartFromDetail()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          カートに追加
+        </div>
+        <!-- 共有 -->
+        <div class="detail-share-btn" onclick="shareItem()" title="この素材を共有">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          この素材を共有
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- cart -->
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-topbar">
+    <div class="close-btn" onclick="toggleCart()">✕</div>
+  </div>
+  <div class="cart-header">
+    <span>🛒 カート</span>
+    <span class="cart-count-badge" id="cartBadge">0点</span>
+  </div>
+  <div id="cartItems"></div>
+
+  <!-- ボタンエリア -->
+  <div class="cart-actions-simple">
+    <button class="cart-dl-btn" onclick="downloadSelected()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      まとめてダウンロード
+    </button>
+    <button class="cart-del-btn" onclick="deleteSelected()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+      選択削除
+    </button>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   データ定義
+   fileType: image / html / pdf  → プレビュー切り替えに使用
+   name: 素材名
+===================================================== */
+const images = [
+  {id:1,  src:"VI管理/やさしえ/PHO_000001.jpeg", useSignedUrl:true, tag:"食事",   type:"image", subcat:"photo",   bg:"white",       color:"red",    fileType:"image", name:"PHO_000001（やさしえ）",    ext:"JPG"},
+  {id:2,  src:"https://picsum.photos/600/400?2",  tag:"介助",   type:"print", subcat:"flyer",   bg:"white",       color:"blue",   fileType:"image", name:"介助チラシ 01",        ext:"PNG"},
+  {id:3,  src:"https://picsum.photos/600/400?3",  tag:"車椅子",  type:"site",  subcat:"lp",      bg:"transparent", color:"green",  fileType:"html",  name:"車椅子LP",             ext:"HTML"},
+  {id:4,  src:"https://picsum.photos/600/400?4",  tag:"リハビリ", type:"image", subcat:"illust",  bg:"white",       color:"orange", fileType:"image", name:"リハビリイラスト 01",   ext:"PNG"},
+  {id:5,  src:"https://picsum.photos/600/400?5",  tag:"会話",   type:"other", subcat:"apbook",  bg:"transparent", color:"purple", fileType:"pdf",   name:"会話APブック",          ext:"PDF"},
+  {id:6,  src:"https://picsum.photos/600/400?6",  tag:"食事",   type:"image", subcat:"photo",   bg:"white",       color:"yellow", fileType:"image", name:"食事シーン写真 02",    ext:"JPG"},
+  {id:7,  src:"https://picsum.photos/600/400?7",  tag:"介助",   type:"image", subcat:"illust",  bg:"transparent", color:"pink",   fileType:"image", name:"介助イラスト 01",      ext:"PNG"},
+  {id:8,  src:"https://picsum.photos/600/400?8",  tag:"リハビリ", type:"print", subcat:"flyer",   bg:"white",       color:"brown",  fileType:"image", name:"リハビリチラシ 01",    ext:"JPG"},
+  {id:9,  src:"https://picsum.photos/600/400?9",  tag:"会話",   type:"image", subcat:"photo",   bg:"white",       color:"gray",   fileType:"image", name:"会話シーン写真 01",    ext:"JPG"},
+  {id:10, src:"https://picsum.photos/600/400?10", tag:"車椅子",  type:"other", subcat:"apbook",  bg:"transparent", color:"black",  fileType:"pdf",   name:"車椅子APブック",        ext:"PDF"},
+  {id:11, src:"https://picsum.photos/600/400?11", tag:"食事",   type:"image", subcat:"illust",  bg:"white",       color:"green",  fileType:"image", name:"食事イラスト 01",      ext:"PNG"},
+  {id:12, src:"https://picsum.photos/600/400?12", tag:"介助",   type:"site",  subcat:"lp",      bg:"transparent", color:"blue",   fileType:"html",  name:"介助LP",               ext:"HTML"},
+  {id:13, src:"https://picsum.photos/600/400?13", tag:"リハビリ", type:"image", subcat:"photo",   bg:"white",       color:"red",    fileType:"image", name:"リハビリ写真 01",      ext:"JPG"},
+  {id:14, src:"https://picsum.photos/600/400?14", tag:"会話",   type:"print", subcat:"flyer",   bg:"white",       color:"orange", fileType:"image", name:"会話チラシ 01",        ext:"PNG"},
+  {id:15, src:"https://picsum.photos/600/400?15", tag:"車椅子",  type:"image", subcat:"photo",   bg:"white",       color:"purple", fileType:"image", name:"車椅子写真 01",        ext:"JPG"},
+  {id:16, src:"https://picsum.photos/600/400?16", tag:"食事",   type:"other", subcat:"apbook",  bg:"transparent", color:"pink",   fileType:"pdf",   name:"食事APブック",          ext:"PDF"},
+  {id:17, src:"https://picsum.photos/600/400?17", tag:"介助",   type:"image", subcat:"photo",   bg:"white",       color:"brown",  fileType:"image", name:"介助写真 01",          ext:"JPG"},
+  {id:18, src:"https://picsum.photos/600/400?18", tag:"リハビリ", type:"site",  subcat:"lp",      bg:"transparent", color:"gray",   fileType:"html",  name:"リハビリLP",           ext:"HTML"},
+  {id:19, src:"https://picsum.photos/600/400?19", tag:"会話",   type:"image", subcat:"illust",  bg:"white",       color:"black",  fileType:"image", name:"会話イラスト 01",      ext:"PNG"},
+  {id:20, src:"https://picsum.photos/600/400?20", tag:"車椅子",  type:"print", subcat:"flyer",   bg:"white",       color:"yellow", fileType:"image", name:"車椅子チラシ 01",      ext:"PNG"},
+  {id:21, src:"https://picsum.photos/600/400?21", tag:"食事",   type:"image", subcat:"photo",   bg:"white",       color:"red",    fileType:"image", name:"食事シーン写真 03",    ext:"JPG"},
+  {id:22, src:"https://picsum.photos/600/400?22", tag:"介助",   type:"image", subcat:"illust",  bg:"transparent", color:"blue",   fileType:"image", name:"介助イラスト 02",      ext:"PNG"},
+  {id:23, src:"https://picsum.photos/600/400?23", tag:"リハビリ", type:"other", subcat:"apbook",  bg:"white",       color:"green",  fileType:"pdf",   name:"リハビリAPブック",      ext:"PDF"},
+  {id:24, src:"https://picsum.photos/600/400?24", tag:"会話",   type:"image", subcat:"photo",   bg:"white",       color:"orange", fileType:"image", name:"会話シーン写真 02",    ext:"JPG"},
+  {id:25, src:"https://picsum.photos/600/400?25", tag:"車椅子",  type:"site",  subcat:"lp",      bg:"transparent", color:"purple", fileType:"html",  name:"車椅子LP 02",          ext:"HTML"},
+];
+
+/* =====================================================
+   署名付きURL取得（API Gateway経由）
+===================================================== */
+const SIGNED_URL_API =
+"https://ry8yzf95ea.execute-api.ap-northeast-1.amazonaws.com/miki-assets-test_3/getSignedUrl";
+async function getSignedUrl(key) {
+  console.log("REQUEST KEY:", key);
+
+  // パス区切り "/" はエンコードせず、それ以外の文字のみエンコードする
+  const encodedKey = key.split("/").map(segment => encodeURIComponent(segment)).join("/");
+  const requestUrl = `${SIGNED_URL_API}?key=${encodedKey}`;
+  console.log("REQUEST URL:", requestUrl);
+
+  const res = await fetch(requestUrl);
+  if (!res.ok) {
+    console.error("API Error:", res.status, res.statusText);
+    throw new Error(`API error: ${res.status}`);
+  }
+  const data = await res.json();
+
+  console.log("API RESPONSE:", JSON.stringify(data));
+  console.log("RETURN URL:", data.url);
+
+  if (!data.url) {
+    throw new Error("No URL in response: " + JSON.stringify(data));
+  }
+
+  return data.url;
+}
+/* =====================================================
+   状態
+===================================================== */
+let cart = [];
+let currentTag     = "all";
+let currentKeyword = "";
+let currentType    = "all";
+let currentSubcat  = "all";
+let currentBg      = "all";
+let currentColor   = "all";
+let currentPage    = 1;
+let perPage        = 20;
+let filteredData   = [];
+let currentItem    = null; // 詳細表示中のアイテム
+
+/* =====================================================
+   URL 状態管理
+===================================================== */
+function buildQuery(){
+  const params = new URLSearchParams();
+  if(currentKeyword) params.set("q", currentKeyword);
+  if(currentTag !== "all") params.set("tag", currentTag);
+  if(currentType !== "all") params.set("type", currentType);
+  if(currentSubcat !== "all") params.set("subcat", currentSubcat);
+  if(currentBg !== "all") params.set("bg", currentBg);
+  if(currentColor !== "all") params.set("color", currentColor);
+  if(currentPage > 1) params.set("page", currentPage);
+  if(perPage !== 20) params.set("per", perPage);
+  return params;
+}
+
+function pushState(){
+  const params = buildQuery();
+  const qs = params.toString();
+  const url = qs ? "?" + qs : location.pathname;
+  history.pushState(null, "", url);
+}
+
+function readStateFromURL(){
+  const params = new URLSearchParams(location.search);
+  currentKeyword = params.get("q") || "";
+  currentTag     = params.get("tag") || "all";
+  currentType    = params.get("type") || "all";
+  currentSubcat  = params.get("subcat") || "all";
+  currentBg      = params.get("bg") || "all";
+  currentColor   = params.get("color") || "all";
+  currentPage    = parseInt(params.get("page")) || 1;
+  perPage        = parseInt(params.get("per")) || 20;
+
+  // UI に反映
+  document.getElementById("searchInput").value = currentKeyword;
+  document.getElementById("typeFilter").value  = currentType;
+
+  // タグ
+  document.querySelectorAll(".tag").forEach(t => {
+    t.classList.toggle("active", t.textContent === currentTag || (currentTag === "all" && t.textContent === "ALL"));
+  });
+  // サブカテゴリ
+  document.querySelectorAll("#subcatGroup .fp-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.subcat === currentSubcat);
+  });
+  // 背景色
+  document.querySelectorAll("#bgGroup .bg-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.bg === currentBg);
+  });
+  // カラー
+  document.querySelectorAll("#colorPalette .color-swatch").forEach(b => {
+    b.classList.toggle("active", b.dataset.color === currentColor);
+  });
+  // 件数ボタン
+  document.querySelectorAll(".per-page-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.n) === perPage);
+  });
+
+  // 詳細ポップアップ（?item=id）
+  const itemId = params.get("item");
+  if(itemId){
+    const item = images.find(i => i.id === parseInt(itemId));
+    if(item) setTimeout(() => openDetail(item), 100);
+  }
+}
+
+window.addEventListener("popstate", () => {
+  readStateFromURL();
+  applyFilters(false);
+});
+
+/* =====================================================
+   フィルターパネル開閉
+===================================================== */
+function toggleFilterPanel(){
+  const panel = document.getElementById("filterPanel");
+  const btn   = document.getElementById("filterToggleBtn");
+  panel.classList.toggle("open");
+  btn.classList.toggle("active");
+}
+
+/* =====================================================
+   フィルター操作
+===================================================== */
+function setSubcat(val, el){
+  currentSubcat = val;
+  document.querySelectorAll("#subcatGroup .fp-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  currentPage = 1;
+  applyFilters();
+}
+
+function setBg(val, el){
+  currentBg = val;
+  document.querySelectorAll("#bgGroup .bg-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  currentPage = 1;
+  applyFilters();
+}
+
+function setColor(val, el){
+  currentColor = val;
+  document.querySelectorAll("#colorPalette .color-swatch").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  currentPage = 1;
+  applyFilters();
+}
+
+function onSearchInput(keyword){
+  currentKeyword = keyword.trim();
+  currentPage = 1;
+  applyFilters();
+}
+
+function filterTag(tag, e){
+  currentTag = tag;
+  document.querySelectorAll(".tag").forEach(t => t.classList.remove("active"));
+  if(e && e.target) e.target.classList.add("active");
+  currentPage = 1;
+  applyFilters();
+}
+
+function setPerPage(n, el){
+  perPage = n;
+  currentPage = 1;
+  document.querySelectorAll(".per-page-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  applyFilters();
+}
+
+/* =====================================================
+   フィルター適用 & レンダリング
+===================================================== */
+function applyFilters(updateURL = true){
+  currentType = document.getElementById("typeFilter").value;
+  let filtered = images;
+  if(currentTag     !== "all") filtered = filtered.filter(i => i.tag     === currentTag);
+  if(currentType    !== "all") filtered = filtered.filter(i => i.type    === currentType);
+  if(currentSubcat  !== "all") filtered = filtered.filter(i => i.subcat  === currentSubcat);
+  if(currentBg      !== "all") filtered = filtered.filter(i => i.bg      === currentBg);
+  if(currentColor   !== "all") filtered = filtered.filter(i => i.color   === currentColor);
+  if(currentKeyword)           filtered = filtered.filter(i =>
+    i.tag.includes(currentKeyword) || i.name.includes(currentKeyword)
+  );
+  filteredData = filtered;
+
+  if(updateURL) pushState();
+  renderPage();
+}
+
+/* =====================================================
+   ページレンダリング
+===================================================== */
+function renderPage(){
+  const total = filteredData.length;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  if(currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * perPage;
+  const end   = Math.min(start + perPage, total);
+  const pageData = filteredData.slice(start, end);
+
+  // 件数表示
+  const countEl = document.getElementById("resultCount");
+  if(total === 0){
+    countEl.innerHTML = `<strong>0</strong> 件`;
+  } else {
+    countEl.innerHTML = `<strong>${total}</strong> 件中 ${start + 1}〜${end} 件を表示`;
+  }
+
+  renderGrid(pageData);
+  renderPagination(totalPages);
+}
+
+/* =====================================================
+   グリッドレンダリング（スケルトン → 実カード）
+===================================================== */
+function renderGrid(data){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  if(data.length === 0){
+    grid.innerHTML = `<p style="color:#999;padding:16px;grid-column:1/-1;">該当する素材が見つかりませんでした。</p>`;
+    return;
+  }
+
+  const typeLabels = {image:"画像", print:"紙媒体", site:"サイト", other:"その他"};
+
+  // ① スケルトンを先に描画
+  data.forEach(() => {
+    const sk = document.createElement("div");
+    sk.className = "card-skeleton";
+    sk.innerHTML = `<div class="skeleton-img"></div><div class="skeleton-bar"></div>`;
+    grid.appendChild(sk);
+  });
+
+  // ② 画像を非同期ロードして差し替え
+  data.forEach((item, idx) => {
+    const buildCard = (resolvedSrc) => {
+      const skeleton = grid.children[idx];
+      if(!skeleton) return;
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${resolvedSrc}" alt="${item.name}">
+        <div class="add-btn" title="カートに追加">＋</div>
+        <div class="type-label">${item.ext || typeLabels[item.type] || ""}</div>
+      `;
+      card.onclick = () => openDetail(item);
+      card.querySelector(".add-btn").onclick = (e) => {
+        e.stopPropagation();
+        addToCart(item);
+      };
+      grid.replaceChild(card, skeleton);
+    };
+
+    if(item.useSignedUrl) {
+      // API経由で署名付きURLを取得してからカードを生成
+      getSignedUrl(item.src).then(signedSrc => {
+        buildCard(signedSrc);
+      }).catch(() => {
+        buildCard(""); // エラー時は空画像
+      });
+    } else {
+      const img = new Image();
+      img.onload = img.onerror = () => buildCard(item.src);
+      img.src = item.src;
+    }
+  });
+}
+
+/* =====================================================
+   ページネーション
+===================================================== */
+function renderPagination(totalPages){
+  const el = document.getElementById("pagination");
+  el.innerHTML = "";
+  if(totalPages <= 1) return;
+
+  // 前へ
+  const prev = document.createElement("div");
+  prev.className = "page-btn";
+  prev.textContent = "← 前へ";
+  prev.disabled = currentPage === 1;
+  if(currentPage === 1) prev.setAttribute("disabled", true);
+  prev.onclick = () => { if(currentPage > 1){ currentPage--; applyFilters(); scrollToGrid(); } };
+  el.appendChild(prev);
+
+  // ページ番号（最大7個表示）
+  const range = getPageRange(currentPage, totalPages);
+  range.forEach(p => {
+    if(p === "..."){
+      const dots = document.createElement("span");
+      dots.className = "page-info";
+      dots.textContent = "…";
+      el.appendChild(dots);
+    } else {
+      const btn = document.createElement("div");
+      btn.className = "page-btn" + (p === currentPage ? " active" : "");
+      btn.textContent = p;
+      btn.onclick = () => { currentPage = p; applyFilters(); scrollToGrid(); };
+      el.appendChild(btn);
+    }
+  });
+
+  // 次へ
+  const next = document.createElement("div");
+  next.className = "page-btn";
+  next.textContent = "次へ →";
+  if(currentPage === totalPages) next.setAttribute("disabled", true);
+  next.onclick = () => { if(currentPage < totalPages){ currentPage++; applyFilters(); scrollToGrid(); } };
+  el.appendChild(next);
+}
+
+function getPageRange(current, total){
+  if(total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = [];
+  if(current <= 4){
+    for(let i = 1; i <= 5; i++) pages.push(i);
+    pages.push("...");
+    pages.push(total);
+  } else if(current >= total - 3){
+    pages.push(1);
+    pages.push("...");
+    for(let i = total - 4; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    pages.push("...");
+    for(let i = current - 1; i <= current + 1; i++) pages.push(i);
+    pages.push("...");
+    pages.push(total);
+  }
+  return pages;
+}
+
+function scrollToGrid(){
+  document.getElementById("grid").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+/* =====================================================
+   詳細ポップアップ
+===================================================== */
+function openDetail(item){
+  currentItem = item;
+
+  // タイトル
+  document.getElementById("detailTitle").textContent = item.name;
+
+  // プレビュー差し替え
+  const preview = document.getElementById("detailPreview");
+  // 既存のメディア要素を削除（バッジとダウンロードボタンは残す）
+  Array.from(preview.children).forEach(c => {
+    if(!c.classList.contains("preview-type-badge") && !c.classList.contains("preview-download-btn")){
+      c.remove();
+    }
+  });
+
+  const badge = document.getElementById("previewTypeBadge");
+
+  // スピナーを先に表示
+  const spinner = document.createElement("div");
+  spinner.className = "preview-spinner";
+  spinner.innerHTML = `<div class="spinner-ring"></div>`;
+  preview.insertBefore(spinner, badge);
+
+  const removeSpinner = () => {
+    if(spinner.parentNode) spinner.parentNode.removeChild(spinner);
+  };
+
+  // useSignedUrl フラグがある場合はAPIで署名付きURLを取得してからプレビュー表示
+  const renderPreview = (resolvedSrc) => {
+    if(item.fileType === "image"){
+      badge.textContent = item.ext || "IMAGE";
+      const img = document.createElement("img");
+      img.alt = item.name;
+      img.style.cssText = "max-width:100%;max-height:100%;object-fit:contain;display:block;";
+      img.onload = img.onerror = removeSpinner;
+      img.src = resolvedSrc;
+      preview.insertBefore(img, badge);
+    } else if(item.fileType === "html"){
+      badge.textContent = "HTML";
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "width:100%;height:100%;border:none;";
+      iframe.title = item.name;
+      iframe.onload = removeSpinner;
+      iframe.src = resolvedSrc;
+      preview.insertBefore(iframe, badge);
+    } else if(item.fileType === "pdf"){
+      badge.textContent = "PDF";
+      const img = document.createElement("img");
+      img.alt = item.name;
+      img.style.cssText = "max-width:100%;max-height:100%;object-fit:contain;display:block;opacity:0.85;";
+      const pdfNote = document.createElement("div");
+      pdfNote.style.cssText = "position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);color:white;font-size:11px;padding:4px 12px;border-radius:20px;white-space:nowrap;";
+      pdfNote.textContent = "PDFプレビュー";
+      img.onload = img.onerror = removeSpinner;
+      img.src = resolvedSrc;
+      preview.insertBefore(img, badge);
+      preview.insertBefore(pdfNote, badge);
+    }
+  };
+
+  if(item.useSignedUrl) {
+    getSignedUrl(item.src).then(signedSrc => {
+      renderPreview(signedSrc);
+    }).catch(() => {
+      removeSpinner();
+    });
+  } else {
+    renderPreview(item.src);
+  }
+
+  // メタ情報
+  const typeLabels = {image:"画像", print:"紙媒体", site:"サイト", other:"その他"};
+  const subcatLabels = {photo:"写真", illust:"イラスト", apbook:"APブック", flyer:"チラシ", lp:"LP"};
+  const bgLabels = {white:"白", transparent:"透過", all:"―"};
+  document.getElementById("detailMeta").innerHTML = `
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">素材名</div>
+      <div class="detail-meta-value">${item.name}</div>
+    </div>
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">種別</div>
+      <div class="detail-meta-value">${typeLabels[item.type] || item.type}</div>
+    </div>
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">カテゴリ</div>
+      <div class="detail-meta-value">${subcatLabels[item.subcat] || item.subcat}</div>
+    </div>
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">タグ</div>
+      <div class="detail-meta-value">${item.tag}</div>
+    </div>
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">形式</div>
+      <div class="detail-meta-value">${item.ext}</div>
+    </div>
+    <div class="detail-meta-row">
+      <div class="detail-meta-label">背景</div>
+      <div class="detail-meta-value">${bgLabels[item.bg] || item.bg}</div>
+    </div>
+  `;
+
+  // カートボタン状態
+  updateDetailCartBtn();
+
+  // URL に item パラメータ追加
+  const params = buildQuery();
+  params.set("item", item.id);
+  history.pushState(null, "", "?" + params.toString());
+
+  // オーバーレイ表示
+  document.getElementById("detailOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDetail(){
+  document.getElementById("detailOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  currentItem = null;
+  // item パラメータを除いた URL に戻す
+  const params = buildQuery();
+  params.delete("item");
+  const qs = params.toString();
+  history.pushState(null, "", qs ? "?" + qs : location.pathname);
+}
+
+function closeDetailOnOverlay(e){
+  if(e.target === document.getElementById("detailOverlay")) closeDetail();
+}
+
+function updateDetailCartBtn(){
+  const btn = document.getElementById("detailCartBtn");
+  if(!currentItem) return;
+  const inCart = cart.some(c => c.id === currentItem.id);
+  if(inCart){
+    btn.classList.add("added");
+    btn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      カート追加済み
+    `;
+  } else {
+    btn.classList.remove("added");
+    btn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      カートに追加
+    `;
+  }
+}
+
+function addToCartFromDetail(){
+  if(!currentItem) return;
+  const inCart = cart.some(c => c.id === currentItem.id);
+  if(!inCart){
+    addToCart(currentItem);
+    updateDetailCartBtn();
+  }
+}
+
+async function downloadItem(){
+  if(!currentItem) return;
+  await downloadSingleItem(currentItem);
+}
+
+async function downloadSingleItem(item){
+  let downloadUrl = item.src;
+
+  if(item.useSignedUrl){
+    try {
+      downloadUrl = await getSignedUrl(item.src);
+    } catch(e) {
+      showToast("URLの取得に失敗しました");
+      return;
+    }
+    // 署名付きURLはS3から直接ダウンロード（fetch経由だとCORSエラーになる場合があるため直リンク）
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = item.name + "." + (item.ext || "").toLowerCase();
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("ダウンロードを開始しました");
+    return;
+  }
+
+  // 同一オリジンまたはCORS許可済みのURLはfetch→Blobでダウンロード
+  try {
+    const res = await fetch(downloadUrl);
+    if(!res.ok) throw new Error("fetch failed");
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = item.name + "." + (item.ext || "").toLowerCase();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    showToast("ダウンロードを開始しました");
+  } catch(e) {
+    // fetch失敗時（クロスオリジン等）はリンク直接開く
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = item.name + "." + (item.ext || "").toLowerCase();
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("ダウンロードを開始しました");
+  }
+}
+
+async function downloadSelected(){
+  if(cart.length === 0){
+    showToast("カートに素材がありません");
+    return;
+  }
+
+  // チェックされているアイテムを取得（なければ全件）
+  const checked = document.querySelectorAll("#cartItems input:checked");
+  let targetIds;
+  if(checked.length > 0){
+    targetIds = [...checked].map(c => Number(c.dataset.id));
+  } else {
+    targetIds = cart.map(i => i.id);
+  }
+
+  const targetItems = targetIds.map(id => images.find(img => img.id === id)).filter(Boolean);
+
+  if(targetItems.length === 0){
+    showToast("ダウンロード対象がありません");
+    return;
+  }
+
+  showToast(`${targetItems.length}件のダウンロードを開始します...`);
+
+  // 順番に1件ずつダウンロード（ブラウザのポップアップブロック回避のため間隔を空ける）
+  for(let i = 0; i < targetItems.length; i++){
+    await new Promise(resolve => setTimeout(resolve, i === 0 ? 0 : 600));
+    await downloadSingleItem(targetItems[i]);
+  }
+}
+
+/* =====================================================
+   共有機能
+===================================================== */
+// 検索結果を共有
+function shareSearch(){
+  const params = buildQuery();
+  params.delete("item");
+  const qs = params.toString();
+  const url = location.origin + location.pathname + (qs ? "?" + qs : "");
+  doShare(url, "検索結果を共有");
+}
+
+// 素材リンクを共有
+function shareItem(){
+  if(!currentItem) return;
+  const params = buildQuery();
+  params.set("item", currentItem.id);
+  const url = location.origin + location.pathname + "?" + params.toString();
+  doShare(url, currentItem.name + " を共有");
+}
+
+// PC: クリップボードコピー ／ スマホ: ネイティブ共有
+function doShare(url, title){
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile && navigator.share){
+    navigator.share({
+      title: title,
+      url: url
+    }).catch(() => {});
+  } else {
+    // PC: クリップボードにコピー
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(() => {
+        showToast("リンクをコピーしました ✓");
+      }).catch(() => {
+        fallbackCopy(url);
+      });
+    } else {
+      fallbackCopy(url);
+    }
+  }
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    showToast("リンクをコピーしました ✓");
+  } catch(e) {
+    showToast("コピーに失敗しました");
+  }
+  document.body.removeChild(ta);
+}
+
+/* =====================================================
+   トースト
+===================================================== */
+let toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
+}
+
+/* =====================================================
+   カート
+===================================================== */
+function addToCart(item){
+  if(cart.some(c => c.id === item.id)) return;
+  cart.push({
+    id: item.id,
+    src: item.src,
+    useSignedUrl: item.useSignedUrl || false,
+    tag: item.tag,
+    name: item.name
+  });
+  updateCart();
+  showToast("カートに追加しました");
+}
+
+function updateCart(){
+  document.getElementById("count").innerText = cart.length;
+  document.getElementById("cartBadge").innerText = cart.length + "点";
+  const list = document.getElementById("cartItems");
+  list.innerHTML = "";
+  if(cart.length === 0){
+    list.innerHTML = `<p style="color:#bbb;font-size:13px;text-align:center;margin-top:24px;">カートは空です</p>`;
+    return;
+  }
+  cart.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    // プレースホルダー画像で先に描画
+    div.innerHTML = `
+      <input type="checkbox" data-id="${item.id}">
+      <img class="item-thumb" src="" alt="${item.name}" data-id="${item.id}">
+      <span class="item-name">${item.name}</span>
+    `;
+    list.appendChild(div);
+
+    // サムネイル画像のURL解決
+    const imgEl = div.querySelector("img.item-thumb");
+    if(item.useSignedUrl){
+      getSignedUrl(item.src).then(signedSrc => {
+        imgEl.src = signedSrc;
+      }).catch(() => {
+        imgEl.src = "";
+      });
+    } else {
+      imgEl.src = item.src;
+    }
+  });
+}
+
+/* =====================================================
+   アクションタブ切り替え
+===================================================== */
+function switchCartTab(tab){
+  document.querySelectorAll(".cart-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".cart-tab-content").forEach(c => c.classList.remove("active"));
+  document.getElementById("tabBtn" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+  document.getElementById("tabContent" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+}
+
+function deleteSelected(){
+  const checked = document.querySelectorAll("#cartItems input:checked");
+  if(checked.length === 0){
+    showToast("削除する素材を選択してください");
+    return;
+  }
+  const ids = [...checked].map(c => Number(c.dataset.id));
+  cart = cart.filter(i => !ids.includes(i.id));
+  updateCart();
+  if(currentItem) updateDetailCartBtn();
+  showToast(`${ids.length}件を削除しました`);
+}
+
+function deleteAll(){
+  if(cart.length === 0){
+    showToast("カートに素材がありません");
+    return;
+  }
+  const count = cart.length;
+  cart = [];
+  updateCart();
+  if(currentItem) updateDetailCartBtn();
+  showToast(`${count}件をすべて削除しました`);
+}
+
+function duplicateSelected(){
+  const checked = document.querySelectorAll("#cartItems input:checked");
+  if(checked.length === 0){
+    showToast("複製する素材を選択してください");
+    return;
+  }
+  const ids = [...checked].map(c => Number(c.dataset.id));
+  const targets = cart.filter(i => ids.includes(i.id));
+  let added = 0;
+  targets.forEach(item => {
+    // 同じIDが既にある場合は追加しない（カートは重複不可）
+    // 複製は元データから再追加（名前に「コピー」を付与）
+    const orig = images.find(img => img.id === item.id);
+    if(orig){
+      addToCart(Object.assign({}, orig, { name: orig.name + "（コピー）" }));
+      added++;
+    }
+  });
+  if(added > 0) showToast(`${added}件を複製しました`);
+}
+
+function toggleCart(){
+  document.getElementById("cartPanel").classList.toggle("active");
+}
+
+/* =====================================================
+   キーボードショートカット
+===================================================== */
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    if(document.getElementById("detailOverlay").classList.contains("open")){
+      closeDetail();
+    } else {
+      document.getElementById("cartPanel").classList.remove("active");
+    }
+  }
+});
+
+/* =====================================================
+   初期化
+===================================================== */
+readStateFromURL();
+applyFilters(false);
+updateCart();
+</script>
+
+</body>
+</html>

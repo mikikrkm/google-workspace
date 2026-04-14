@@ -1,0 +1,2526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>素材管理画面</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f5f6f8;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 500;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+}
+.sidebar.open {
+  transform: translateX(0);
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 499;
+}
+.sidebar-overlay.open {
+  display: block;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 0.04em;
+}
+.sidebar-close {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 16px;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-close:hover { background: #f0f0f0; color: #333; }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover {
+  background: #f5f6f8;
+  color: #0066ff;
+  border-left-color: #0066ff;
+}
+.nav-item.active {
+  background: #eef3ff;
+  color: #0066ff;
+  border-left-color: #0066ff;
+  font-weight: 600;
+}
+.nav-item svg { flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 12px 12px 16px;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+}
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.logout-btn:hover {
+  background: #fff0f0;
+  color: #e03030;
+  border-color: #e03030;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 56px;
+  position: relative;
+  z-index: 100;
+}
+
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  padding: 8px;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.hamburger-btn:hover { background: #f5f5f5; border-color: #bbb; }
+.hamburger-btn span {
+  display: block;
+  height: 2px;
+  background: #555;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+
+.header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* タグエリア（ヘッダー内） */
+.header-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.header-tags::-webkit-scrollbar { display: none; }
+
+.tag {
+  background: #e8e8e8;
+  color: #444;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  border: 1px solid #d0d0d0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+.tag:hover { background: #d4d4d4; color: #222; }
+.tag.active { background: #555; color: white; border-color: #555; }
+
+/* 検索バー（広め） */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  max-width: 340px;
+}
+.search-icon {
+  position: absolute;
+  left: 10px;
+  width: 14px; height: 14px;
+  pointer-events: none;
+  color: #aaa;
+}
+.search {
+  width: 100%;
+  padding: 8px 10px 8px 30px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #f9f9f9;
+}
+.search:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+  background: white;
+}
+
+/* 絞り込みボタン（検索バー右隣） */
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+  flex-shrink: 0;
+}
+.filter-toggle-btn:hover { background: #f0f0f0; border-color: #aaa; }
+.filter-toggle-btn.active { background: #555; color: white; border-color: #555; }
+
+/* アクションタブ（リストパネル下部） */
+.list-action-tab-bar {
+  display: flex;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+.list-action-tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.list-action-tab:hover { color: #444; background: #f0f0f0; }
+.list-action-tab.active { color: #0066ff; border-bottom-color: #0066ff; background: white; }
+
+.list-action-content {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  flex-shrink: 0;
+  border-top: 1px solid #eee;
+  background: white;
+}
+.list-action-content.active { display: flex; }
+
+.list-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+  border: 1px solid #ddd;
+  background: white;
+  color: #555;
+  width: 100%;
+}
+.list-action-btn:hover { background: #f5f5f5; border-color: #bbb; }
+.list-action-btn.danger { color: #e03030; border-color: #e03030; }
+.list-action-btn.danger:hover { background: #fff0f0; }
+.list-action-btn.danger-fill { background: #e03030; color: white; border-color: #e03030; }
+.list-action-btn.danger-fill:hover { background: #c01010; }
+
+/* ヘッダー右側ボタン群 */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.popup-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.popup-btn:hover { background: #f0f0f0; border-color: #aaa; }
+
+/* ナッツアイコン */
+.nuts-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ddd;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.nuts-icon:hover { border-color: #0066ff; transform: scale(1.05); }
+.nuts-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ===== MAIN AREA ===== */
+.main-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ===== LIST PANEL ===== */
+.list-panel {
+  width: 320px;
+  flex-shrink: 0;
+  background: white;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.list-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.list-count {
+  font-size: 12px;
+  color: #888;
+}
+.list-count strong { color: #333; }
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #555;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.toolbar-btn:hover { background: #f5f5f5; border-color: #bbb; }
+.toolbar-btn.danger:hover { background: #fff0f0; color: #e03030; border-color: #e03030; }
+.toolbar-btn.primary {
+  background: #0066ff;
+  color: white;
+  border-color: #0066ff;
+}
+.toolbar-btn.primary:hover { background: #0052cc; }
+
+/* チェックボックス全選択 */
+.select-all-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+.select-all-row input[type="checkbox"] {
+  accent-color: #0066ff;
+  width: 14px; height: 14px;
+  cursor: pointer;
+}
+
+/* リスト本体 */
+.list-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.list-item:hover { background: #f5f6f8; }
+.list-item.selected { background: #eef3ff; }
+.list-item.active { background: #eef3ff; border-left: 3px solid #0066ff; }
+
+.list-item input[type="checkbox"] {
+  accent-color: #0066ff;
+  width: 14px; height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.list-thumb {
+  width: 48px; height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #eee;
+}
+
+.list-info {
+  flex: 1;
+  min-width: 0;
+}
+.list-name {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-meta {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+}
+.list-ext-badge {
+  background: #e8e8e8;
+  color: #555;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.list-item-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.list-item:hover .list-item-actions { opacity: 1; }
+
+.item-action-btn {
+  width: 26px; height: 26px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #666;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.item-action-btn:hover { background: #f0f0f0; color: #333; border-color: #bbb; }
+.item-action-btn.copy-btn:hover { background: #eef3ff; color: #0066ff; border-color: #0066ff; }
+.item-action-btn.delete-btn-item:hover { background: #fff0f0; color: #e03030; border-color: #e03030; }
+
+/* ===== PREVIEW PANEL ===== */
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f6f8;
+}
+
+.preview-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
+  gap: 12px;
+}
+.preview-empty svg { opacity: 0.4; }
+.preview-empty p { font-size: 13px; margin: 0; }
+
+.preview-content {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+.preview-content.visible { display: flex; }
+
+.preview-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.preview-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.preview-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.preview-action-btn:hover { background: #f5f5f5; border-color: #aaa; color: #222; }
+.preview-action-btn.blue {
+  background: #0066ff;
+  color: white;
+  border-color: #0066ff;
+}
+.preview-action-btn.blue:hover { background: #0052cc; }
+
+.preview-img-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #e8e8e8;
+  position: relative;
+}
+.preview-img-area img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.preview-img-area iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.preview-meta-bar {
+  background: white;
+  border-top: 1px solid #ddd;
+  padding: 10px 16px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.meta-value {
+  font-size: 12px;
+  color: #333;
+}
+
+/* ===== MODALS ===== */
+/* コピーモーダル */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 800;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+}
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 16px;
+  transition: background 0.15s, color 0.15s;
+}
+.modal-close:hover { background: #f0f0f0; color: #333; }
+
+.modal-body {
+  padding: 18px;
+}
+.modal-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.modal-url-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.modal-url-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  color: #333;
+  background: #f9f9f9;
+  outline: none;
+}
+.modal-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #0066ff;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  user-select: none;
+}
+.modal-copy-btn:hover { background: #0052cc; }
+.modal-copy-btn.copied { background: #22a06b; }
+
+.modal-footer {
+  padding: 12px 18px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #eee;
+}
+.modal-btn {
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.modal-btn:hover { background: #f5f5f5; }
+
+/* 名称変更モーダル */
+.rename-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.rename-input:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+.modal-btn.primary {
+  background: #0066ff;
+  color: white;
+  border-color: #0066ff;
+}
+.modal-btn.primary:hover { background: #0052cc; }
+.modal-btn.danger {
+  background: white;
+  color: #e03030;
+  border-color: #e03030;
+}
+.modal-btn.danger:hover { background: #fff0f0; }
+
+/* 削除確認モーダル */
+.delete-confirm-text {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.6;
+}
+.delete-confirm-text strong { color: #e03030; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #222;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 24px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== スケルトン ===== */
+.skeleton-thumb {
+  width: 48px; height: 48px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  flex-shrink: 0;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== UPLOAD PANEL ===== */
+.upload-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f6f8;
+  overflow-y: auto;
+}
+.upload-panel.visible { display: flex; }
+
+.upload-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.upload-topbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+.upload-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.upload-back-btn:hover { background: #f0f0f0; border-color: #aaa; }
+
+/* アップロードフォーム本体 */
+.upload-form-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 32px;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+/* ファイル参照ボタン */
+.file-browse-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 560px;
+}
+.file-browse-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+.file-browse-btn:hover { background: #f0f0f0; border-color: #aaa; }
+.file-browse-label {
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ドラッグ&ドロップエリア */
+.drop-zone {
+  width: 100%;
+  max-width: 560px;
+  min-height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: #cc2200;
+  background: #fff5f3;
+}
+.drop-zone svg { color: #ccc; transition: color 0.2s; }
+.drop-zone:hover svg,
+.drop-zone.dragover svg { color: #cc2200; }
+.drop-zone-text {
+  font-size: 14px;
+  color: #888;
+  font-weight: 500;
+}
+.drop-zone-sub {
+  font-size: 12px;
+  color: #bbb;
+}
+.drop-file-count {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11px;
+  color: #aaa;
+  background: #f5f6f8;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+.drop-file-count.has-files {
+  background: #fff0ee;
+  color: #cc2200;
+  border-color: #f5c0b8;
+  font-weight: 600;
+}
+
+/* ファイルリストプレビュー */
+.file-list-preview {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  font-size: 12px;
+  color: #444;
+}
+.file-list-item svg { flex-shrink: 0; color: #aaa; }
+.file-list-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-list-item-size { color: #bbb; flex-shrink: 0; }
+.file-list-item-remove {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #bbb;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.file-list-item-remove:hover { background: #fff0f0; color: #e03030; }
+
+/* アップロードボタン（赤系・横幅いっぱい） */
+.upload-execute-btn {
+  width: 100%;
+  max-width: 560px;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #e03030 0%, #c01010 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(200,20,20,0.3);
+  user-select: none;
+  letter-spacing: 0.03em;
+}
+.upload-execute-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(200,20,20,0.38);
+}
+.upload-execute-btn:active { transform: translateY(0); }
+.upload-execute-btn:disabled {
+  background: #ccc;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* プログレスバー */
+.upload-progress-wrap {
+  width: 100%;
+  max-width: 560px;
+  display: none;
+}
+.upload-progress-wrap.visible { display: block; }
+.upload-progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #e03030, #ff6644);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+.upload-progress-text {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* ===== アップロード完了画面 ===== */
+.upload-result {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 32px;
+  gap: 0;
+  background: #f5f6f8;
+  text-align: center;
+}
+.upload-result.visible { display: flex; }
+
+.upload-result-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 4px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
+}
+.upload-result-title.show { opacity: 1; transform: translateY(0); }
+
+.upload-result-nuts {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  margin: 12px 0 20px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s;
+}
+.upload-result-nuts.show { opacity: 1; transform: scale(1); }
+
+.upload-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease 0.6s, transform 0.6s ease 0.6s;
+}
+.upload-result-actions.show { opacity: 1; transform: translateY(0); }
+
+.tag-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #0066ff;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: none;
+  user-select: none;
+}
+.tag-edit-btn:hover {
+  background: #0052cc;
+  transform: translateY(-1px);
+}
+
+.upload-again-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: none;
+  user-select: none;
+}
+.upload-again-btn:hover {
+  background: #f5f5f5;
+  border-color: #aaa;
+  transform: translateY(-1px);
+}
+
+.later-link {
+  font-size: 12px;
+  color: #bbb;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.later-link:hover { color: #888; }
+
+/* ===== アップロード失敗画面 ===== */
+.upload-fail {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 32px;
+  gap: 0;
+  background: #f5f6f8;
+  text-align: center;
+}
+.upload-fail.visible { display: flex; }
+
+.upload-fail-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #c01010;
+  margin-bottom: 4px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
+}
+.upload-fail-title.show { opacity: 1; transform: translateY(0); }
+
+.upload-fail-nuts {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  margin: 12px 0 20px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s;
+}
+.upload-fail-nuts.show { opacity: 1; transform: scale(1); }
+
+.upload-fail-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease 0.6s, transform 0.6s ease 0.6s;
+}
+.upload-fail-actions.show { opacity: 1; transform: translateY(0); }
+
+.contact-admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #444;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  user-select: none;
+}
+.contact-admin-btn:hover { background: #222; transform: translateY(-1px); }
+
+/* ===== レスポンシブ ===== */
+@media (max-width: 768px) {
+  .list-panel { width: 100%; }
+  .preview-panel { display: none; }
+  .search-wrapper { width: 160px; }
+  .header-tags { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- サイドバーオーバーレイ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">📁 素材管理</div>
+    <div class="sidebar-close" onclick="closeSidebar()">✕</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="manage.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      素材管理
+    </a>
+    <a class="nav-item" id="navUpload" href="#" onclick="openUploadPanel(); closeSidebar(); return false;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      アップロード
+    </a>
+    <a class="nav-item" href="#" onclick="showToast('ダウンロード機能は準備中です'); return false;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      ダウンロード
+    </a>
+    <a class="nav-item" href="#" onclick="showToast('品番管理機能は準備中です'); return false;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      品番管理
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="logout-btn" onclick="confirmLogout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      ログアウト
+    </div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <!-- ハンバーガーボタン -->
+  <button class="hamburger-btn" onclick="openSidebar()" title="メニュー">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="header-title">PickBox</div>
+
+  <!-- 絞り込みタグ -->
+  <div class="header-tags" id="headerTags">
+    <div class="tag active" data-tag="all" onclick="filterTag('all', this)">ALL</div>
+    <div class="tag" data-tag="食事" onclick="filterTag('食事', this)">食事</div>
+    <div class="tag" data-tag="介助" onclick="filterTag('介助', this)">介助</div>
+    <div class="tag" data-tag="車椅子" onclick="filterTag('車椅子', this)">車椅子</div>
+    <div class="tag" data-tag="リハビリ" onclick="filterTag('リハビリ', this)">リハビリ</div>
+    <div class="tag" data-tag="会話" onclick="filterTag('会話', this)">会話</div>
+  </div>
+
+  <!-- 検索バー（広め） -->
+  <div class="search-wrapper">
+    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+    </svg>
+    <input class="search" id="searchInput" placeholder="素材を検索..." oninput="onSearchInput(this.value)" />
+  </div>
+
+  <!-- 絞り込みボタン（検索バー右隣） -->
+  <div class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <line x1="8" y1="12" x2="20" y2="12"/>
+      <line x1="12" y1="18" x2="20" y2="18"/>
+    </svg>
+    絞り込み
+  </div>
+
+  <!-- 右側ボタン群 -->
+  <div class="header-right">
+    <!-- 別ウィンドウポップアップ -->
+    <div class="popup-btn" onclick="openSearchPopup()" title="検索画面を別ウィンドウで開く">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      別ウィンドウ
+    </div>
+
+    <!-- ナッツアイコン -->
+    <div class="nuts-icon" title="ナッツ">
+      <img src="img/ナッツ_元気.png" alt="ナッツ" />
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN AREA ===== -->
+<div class="main-area">
+
+  <!-- ===== LIST PANEL ===== -->
+  <div class="list-panel">
+    <!-- ツールバー -->
+    <div class="list-toolbar">
+      <div class="list-toolbar-left">
+        <div class="list-count"><strong id="listCount">0</strong> 件</div>
+      </div>
+    </div>
+
+    <!-- 全選択行 -->
+    <div class="select-all-row">
+      <input type="checkbox" id="selectAllChk" onchange="toggleSelectAll(this.checked)" />
+      <label for="selectAllChk" style="cursor:pointer;user-select:none;">すべて選択</label>
+    </div>
+
+    <!-- リスト本体 -->
+    <div class="list-body" id="listBody">
+      <!-- JS で描画 -->
+    </div>
+
+    <!-- アクションタブバー -->
+    <div class="list-action-tab-bar">
+      <div class="list-action-tab active" id="listTabBtnAction" onclick="switchListTab('action')">アクション</div>
+      <div class="list-action-tab" id="listTabBtnEdit" onclick="switchListTab('edit')">編集</div>
+    </div>
+
+    <!-- アクションタブ内容：アクション（ダウンロード等） -->
+    <div class="list-action-content active" id="listTabContentAction">
+      <div class="list-action-btn" onclick="downloadCurrentItem()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        ダウンロード
+      </div>
+      <div class="list-action-btn" onclick="openCopyLinkModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        リンクコピー
+      </div>
+    </div>
+
+    <!-- アクションタブ内容：編集 -->
+    <div class="list-action-content" id="listTabContentEdit">
+      <div class="list-action-btn" onclick="duplicateSelected()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        複製（選択中）
+      </div>
+      <div class="list-action-btn danger" onclick="deleteSelected()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+        選択削除
+      </div>
+      <div class="list-action-btn danger-fill" onclick="deleteAll()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        一括削除
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PREVIEW PANEL ===== -->
+  <div class="preview-panel" id="previewPanel">
+
+    <!-- ===== アップロードパネル ===== -->
+    <div class="upload-panel" id="uploadPanel">
+      <!-- トップバー -->
+      <div class="upload-topbar">
+        <div class="upload-topbar-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          素材アップロード
+        </div>
+        <div class="upload-back-btn" onclick="closeUploadPanel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          戻る
+        </div>
+      </div>
+
+      <!-- フォームエリア（通常状態） -->
+      <div class="upload-form-area" id="uploadFormArea">
+        <!-- ファイル参照 -->
+        <div class="file-browse-row" style="max-width:560px;width:100%;">
+          <div class="file-browse-btn" onclick="document.getElementById('fileInput').click()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            ファイルを参照
+          </div>
+          <div class="file-browse-label" id="fileBrowseLabel">ファイルが選択されていません</div>
+          <input type="file" id="fileInput" multiple accept="image/*,application/pdf,.html,.htm" style="display:none;" onchange="onFileInputChange(this.files)" />
+        </div>
+
+        <!-- ドラッグ&ドロップエリア -->
+        <div class="drop-zone" id="dropZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="onDragOver(event)"
+          ondragleave="onDragLeave(event)"
+          ondrop="onDrop(event)">
+          <div class="drop-file-count" id="dropFileCount">0 ファイル</div>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div class="drop-zone-text">フォルダまたはファイルをここにドラッグ</div>
+          <div class="drop-zone-sub">または クリックしてファイルを選択</div>
+        </div>
+
+        <!-- ファイルリスト -->
+        <div class="file-list-preview" id="fileListPreview"></div>
+
+        <!-- プログレスバー -->
+        <div class="upload-progress-wrap" id="uploadProgressWrap">
+          <div class="upload-progress-bar-bg">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+          <div class="upload-progress-text" id="uploadProgressText">0%</div>
+        </div>
+
+        <!-- アップロードボタン -->
+        <button class="upload-execute-btn" id="uploadExecuteBtn" onclick="executeUpload()" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          アップロードする
+        </button>
+      </div>
+
+      <!-- アップロード完了画面 -->
+      <div class="upload-result" id="uploadResult">
+        <div class="upload-result-title" id="uploadResultTitle">アップロード完了！</div>
+        <img class="upload-result-nuts" id="uploadResultNuts" src="img/ナッツ_元気.png" alt="ナッツ" />
+        <div class="upload-result-actions" id="uploadResultActions">
+          <button class="tag-edit-btn" onclick="onTagEdit()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            タグを編集する
+          </button>
+          <button class="upload-again-btn" onclick="resetUploadForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            続けてアップロード
+          </button>
+          <button class="later-link" onclick="onUploadLater()">後でやる</button>
+        </div>
+      </div>
+
+      <!-- アップロード失敗画面 -->
+      <div class="upload-fail" id="uploadFail">
+        <div class="upload-fail-title" id="uploadFailTitle">アップロードに失敗しました</div>
+        <img class="upload-fail-nuts" id="uploadFailNuts" src="img/ナッツ_しょんぼり.png" alt="ナッツ" />
+        <div class="upload-fail-actions" id="uploadFailActions">
+          <button class="contact-admin-btn" onclick="onContactAdmin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            管理者に連絡する
+          </button>
+          <button class="later-link" onclick="onUploadCancel()">キャンセル</button>
+        </div>
+      </div>
+    </div>
+    <!-- /アップロードパネル -->
+
+    <!-- 未選択時 -->
+    <div class="preview-empty" id="previewEmpty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      <p>素材を選択するとプレビューが表示されます</p>
+    </div>
+
+    <!-- 選択時 -->
+    <div class="preview-content" id="previewContent">
+      <div class="preview-topbar">
+        <div class="preview-name" id="previewName">—</div>
+        <div class="preview-actions">
+          <div class="preview-action-btn" onclick="openRenameModal()" title="名称変更">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            名称変更
+          </div>
+          <div class="preview-action-btn" onclick="openCopyLinkModal()" title="リンクをコピー">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            リンクコピー
+          </div>
+          <div class="preview-action-btn blue" onclick="downloadCurrentItem()" title="ダウンロード">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            DL
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-img-area" id="previewImgArea">
+        <!-- JS で差し替え -->
+      </div>
+
+      <div class="preview-meta-bar" id="previewMetaBar">
+        <!-- JS で差し替え -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== リンクコピー モーダル ===== -->
+<div class="modal-overlay" id="copyLinkModal" onclick="closeCopyLinkOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">🔗 素材リンクをコピー</div>
+      <div class="modal-close" onclick="closeCopyLinkModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">素材URL</div>
+      <div class="modal-url-row">
+        <input class="modal-url-input" id="copyLinkInput" type="text" readonly />
+        <button class="modal-copy-btn" id="copyLinkBtn" onclick="doCopyLink()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          コピー
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-btn" onclick="closeCopyLinkModal()">閉じる</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 名称変更 モーダル ===== -->
+<div class="modal-overlay" id="renameModal" onclick="closeRenameOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 名称変更</div>
+      <div class="modal-close" onclick="closeRenameModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">新しい名称</div>
+      <input class="rename-input" id="renameInput" type="text" placeholder="素材名を入力..." onkeydown="if(event.key==='Enter') doRename()" />
+    </div>
+    <div class="modal-footer">
+      <div class="modal-btn" onclick="closeRenameModal()">キャンセル</div>
+      <div class="modal-btn primary" onclick="doRename()">変更する</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 削除確認 モーダル ===== -->
+<div class="modal-overlay" id="deleteModal" onclick="closeDeleteOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">🗑 削除の確認</div>
+      <div class="modal-close" onclick="closeDeleteModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirm-text" id="deleteConfirmText">
+        選択した素材を削除しますか？<br>この操作は取り消せません。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-btn" onclick="closeDeleteModal()">キャンセル</div>
+      <div class="modal-btn danger" onclick="executeDelete()">削除する</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ログアウト確認 モーダル ===== -->
+<div class="modal-overlay" id="logoutModal" onclick="closeLogoutOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">ログアウト</div>
+      <div class="modal-close" onclick="closeLogoutModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirm-text">ログアウトしますか？</div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-btn" onclick="closeLogoutModal()">キャンセル</div>
+      <div class="modal-btn danger" onclick="doLogout()">ログアウト</div>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   データ定義（search.html と同じタグ構成）
+===================================================== */
+let materials = [
+  {id:1,  src:"https://picsum.photos/600/400?1",  tag:"食事",   type:"image", subcat:"photo",   bg:"white",       color:"red",    fileType:"image", name:"食事シーン写真 01",    ext:"JPG"},
+  {id:2,  src:"https://picsum.photos/600/400?2",  tag:"介助",   type:"print", subcat:"flyer",   bg:"white",       color:"blue",   fileType:"image", name:"介助チラシ 01",        ext:"PNG"},
+  {id:3,  src:"https://picsum.photos/600/400?3",  tag:"車椅子",  type:"site",  subcat:"lp",      bg:"transparent", color:"green",  fileType:"html",  name:"車椅子LP",             ext:"HTML"},
+  {id:4,  src:"https://picsum.photos/600/400?4",  tag:"リハビリ", type:"image", subcat:"illust",  bg:"white",       color:"orange", fileType:"image", name:"リハビリイラスト 01",   ext:"PNG"},
+  {id:5,  src:"https://picsum.photos/600/400?5",  tag:"会話",   type:"other", subcat:"apbook",  bg:"transparent", color:"purple", fileType:"pdf",   name:"会話APブック",          ext:"PDF"},
+  {id:6,  src:"https://picsum.photos/600/400?6",  tag:"食事",   type:"image", subcat:"photo",   bg:"white",       color:"yellow", fileType:"image", name:"食事シーン写真 02",    ext:"JPG"},
+  {id:7,  src:"https://picsum.photos/600/400?7",  tag:"介助",   type:"image", subcat:"illust",  bg:"transparent", color:"pink",   fileType:"image", name:"介助イラスト 01",      ext:"PNG"},
+  {id:8,  src:"https://picsum.photos/600/400?8",  tag:"リハビリ", type:"print", subcat:"flyer",   bg:"white",       color:"brown",  fileType:"image", name:"リハビリチラシ 01",    ext:"JPG"},
+  {id:9,  src:"https://picsum.photos/600/400?9",  tag:"会話",   type:"image", subcat:"photo",   bg:"white",       color:"gray",   fileType:"image", name:"会話シーン写真 01",    ext:"JPG"},
+  {id:10, src:"https://picsum.photos/600/400?10", tag:"車椅子",  type:"other", subcat:"apbook",  bg:"transparent", color:"black",  fileType:"pdf",   name:"車椅子APブック",        ext:"PDF"},
+  {id:11, src:"https://picsum.photos/600/400?11", tag:"食事",   type:"image", subcat:"illust",  bg:"white",       color:"green",  fileType:"image", name:"食事イラスト 01",      ext:"PNG"},
+  {id:12, src:"https://picsum.photos/600/400?12", tag:"介助",   type:"site",  subcat:"lp",      bg:"transparent", color:"blue",   fileType:"html",  name:"介助LP",               ext:"HTML"},
+  {id:13, src:"https://picsum.photos/600/400?13", tag:"リハビリ", type:"image", subcat:"photo",   bg:"white",       color:"red",    fileType:"image", name:"リハビリ写真 01",      ext:"JPG"},
+  {id:14, src:"https://picsum.photos/600/400?14", tag:"会話",   type:"print", subcat:"flyer",   bg:"white",       color:"orange", fileType:"image", name:"会話チラシ 01",        ext:"PNG"},
+  {id:15, src:"https://picsum.photos/600/400?15", tag:"車椅子",  type:"image", subcat:"photo",   bg:"white",       color:"purple", fileType:"image", name:"車椅子写真 01",        ext:"JPG"},
+  {id:16, src:"https://picsum.photos/600/400?16", tag:"食事",   type:"other", subcat:"apbook",  bg:"transparent", color:"pink",   fileType:"pdf",   name:"食事APブック",          ext:"PDF"},
+  {id:17, src:"https://picsum.photos/600/400?17", tag:"介助",   type:"image", subcat:"photo",   bg:"white",       color:"brown",  fileType:"image", name:"介助写真 01",          ext:"JPG"},
+  {id:18, src:"https://picsum.photos/600/400?18", tag:"リハビリ", type:"site",  subcat:"lp",      bg:"transparent", color:"gray",   fileType:"html",  name:"リハビリLP",           ext:"HTML"},
+  {id:19, src:"https://picsum.photos/600/400?19", tag:"会話",   type:"image", subcat:"illust",  bg:"white",       color:"black",  fileType:"image", name:"会話イラスト 01",      ext:"PNG"},
+  {id:20, src:"https://picsum.photos/600/400?20", tag:"車椅子",  type:"print", subcat:"flyer",   bg:"white",       color:"yellow", fileType:"image", name:"車椅子チラシ 01",      ext:"PNG"},
+];
+
+/* =====================================================
+   状態
+===================================================== */
+let currentTag     = "all";
+let currentKeyword = "";
+let filteredData   = [];
+let selectedItem   = null;
+let deleteMode     = "selected"; // "selected" | "all"
+let nextId         = 100;
+
+/* =====================================================
+   アップロードパネル
+===================================================== */
+let uploadFiles = [];
+
+function openUploadPanel(){
+  // 他のパネルを隠す
+  document.getElementById("previewEmpty").style.display = "none";
+  document.getElementById("previewContent").classList.remove("visible");
+  document.getElementById("uploadPanel").classList.add("visible");
+  // サイドバーのアクティブ状態
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("navUpload").classList.add("active");
+  // フォームリセット
+  resetUploadForm();
+}
+
+function closeUploadPanel(){
+  document.getElementById("uploadPanel").classList.remove("visible");
+  // 素材管理をアクティブに戻す
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.querySelector(".nav-item[href='manage.html']").classList.add("active");
+  // 未選択状態に戻す
+  document.getElementById("previewEmpty").style.display = "";
+}
+
+function resetUploadForm(){
+  uploadFiles = [];
+  document.getElementById("fileInput").value = "";
+  document.getElementById("fileBrowseLabel").textContent = "ファイルが選択されていません";
+  document.getElementById("fileListPreview").innerHTML = "";
+  document.getElementById("dropFileCount").textContent = "0 ファイル";
+  document.getElementById("dropFileCount").classList.remove("has-files");
+  document.getElementById("uploadExecuteBtn").disabled = true;
+  document.getElementById("uploadProgressWrap").classList.remove("visible");
+  document.getElementById("uploadProgressBar").style.width = "0%";
+  document.getElementById("uploadProgressText").textContent = "0%";
+  // 結果画面を隠す
+  document.getElementById("uploadResult").classList.remove("visible");
+  document.getElementById("uploadFail").classList.remove("visible");
+  document.getElementById("uploadFormArea").style.display = "";
+  // アニメーションクラスリセット
+  ["uploadResultTitle","uploadResultNuts","uploadResultActions",
+   "uploadFailTitle","uploadFailNuts","uploadFailActions"].forEach(id => {
+    document.getElementById(id).classList.remove("show");
+  });
+}
+
+function onFileInputChange(files){
+  addFiles(Array.from(files));
+}
+
+function addFiles(newFiles){
+  newFiles.forEach(f => {
+    if(!uploadFiles.find(x => x.name === f.name && x.size === f.size)){
+      uploadFiles.push(f);
+    }
+  });
+  updateFileList();
+}
+
+function removeFile(idx){
+  uploadFiles.splice(idx, 1);
+  updateFileList();
+}
+
+function updateFileList(){
+  const count = uploadFiles.length;
+  const countEl = document.getElementById("dropFileCount");
+  countEl.textContent = count + " ファイル";
+  countEl.classList.toggle("has-files", count > 0);
+
+  const label = document.getElementById("fileBrowseLabel");
+  label.textContent = count > 0 ? `${count}件選択中` : "ファイルが選択されていません";
+
+  const list = document.getElementById("fileListPreview");
+  list.innerHTML = "";
+  uploadFiles.forEach((f, i) => {
+    const item = document.createElement("div");
+    item.className = "file-list-item";
+    const sizeStr = f.size < 1024*1024
+      ? (f.size/1024).toFixed(1) + " KB"
+      : (f.size/1024/1024).toFixed(1) + " MB";
+    item.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <span class="file-list-item-name">${f.name}</span>
+      <span class="file-list-item-size">${sizeStr}</span>
+      <div class="file-list-item-remove" onclick="removeFile(${i})" title="削除">✕</div>
+    `;
+    list.appendChild(item);
+  });
+
+  document.getElementById("uploadExecuteBtn").disabled = count === 0;
+}
+
+// ドラッグ&ドロップ
+function onDragOver(e){
+  e.preventDefault();
+  document.getElementById("dropZone").classList.add("dragover");
+}
+function onDragLeave(e){
+  document.getElementById("dropZone").classList.remove("dragover");
+}
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById("dropZone").classList.remove("dragover");
+  const items = e.dataTransfer.items;
+  const files = [];
+  if(items){
+    for(let i = 0; i < items.length; i++){
+      const entry = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
+      if(entry && entry.isDirectory){
+        readDirectory(entry, files, () => addFiles(files));
+        return;
+      } else {
+        const f = items[i].getAsFile();
+        if(f) files.push(f);
+      }
+    }
+  } else {
+    Array.from(e.dataTransfer.files).forEach(f => files.push(f));
+  }
+  addFiles(files);
+}
+
+function readDirectory(dirEntry, files, done){
+  const reader = dirEntry.createReader();
+  reader.readEntries(entries => {
+    let pending = entries.length;
+    if(pending === 0){ done(); return; }
+    entries.forEach(entry => {
+      if(entry.isFile){
+        entry.file(f => {
+          files.push(f);
+          if(--pending === 0) done();
+        });
+      } else if(entry.isDirectory){
+        readDirectory(entry, files, () => { if(--pending === 0) done(); });
+      } else {
+        if(--pending === 0) done();
+      }
+    });
+  });
+}
+
+/* =====================================================
+   アップロード API（upload.html の処理を移植）
+===================================================== */
+const UPLOAD_URL_API = "https://av45ti0j66.execute-api.ap-northeast-1.amazonaws.com/getUploadUrl";
+
+// 署名付きPUT URLを取得してS3にアップロード（単一ファイル）
+async function uploadFileToS3(file, s3Path) {
+  const res = await fetch(UPLOAD_URL_API, {
+    method: "POST",
+    body: JSON.stringify({ fileName: s3Path, fileType: file.type })
+  });
+  if (!res.ok) throw new Error("getUploadUrl failed: " + res.status);
+  const data = await res.json();
+  if (!data.url) throw new Error("No presigned URL in response");
+  const putRes = await fetch(data.url, { method: "PUT", body: file });
+  if (!putRes.ok) throw new Error("S3 PUT failed: " + putRes.status);
+  console.log("アップ完了:", s3Path);
+}
+
+// フォルダエントリを再帰展開してファイルリストを収集
+function collectFilesFromEntry(entry, path) {
+  path = path || "";
+  return new Promise(function(resolve) {
+    if (entry.isFile) {
+      entry.file(function(file) {
+        file._s3path = path + file.name;
+        resolve([file]);
+      });
+    } else if (entry.isDirectory) {
+      var reader = entry.createReader();
+      var results = [];
+      function readAll() {
+        reader.readEntries(function(entries) {
+          if (entries.length === 0) { resolve(results); return; }
+          var pending = entries.length;
+          entries.forEach(function(e) {
+            collectFilesFromEntry(e, path + entry.name + "/").then(function(sub) {
+              results = results.concat(sub);
+              if (--pending === 0) readAll();
+            });
+          });
+        });
+      }
+      readAll();
+    } else {
+      resolve([]);
+    }
+  });
+}
+
+// S3キーにフォルダ名_日付プレフィックスを付与（upload.htmlのaddVersionToPath相当）
+function buildS3Key(filePath) {
+  var today = new Date().toISOString().slice(0, 10);
+
+  var parts = filePath.split("/").filter(p => p !== "" && p !== "C:" && p !== "fakepath");
+
+  if (parts.length === 0) return filePath;
+
+  var folder = parts[0];
+  var rest = parts.slice(1).join("/");
+
+  return folder + "_" + today + "/" + rest;
+}
+
+// アップロード実行（実API）
+async function executeUpload() {
+  if (uploadFiles.length === 0) return;
+  const btn = document.getElementById("uploadExecuteBtn");
+  btn.disabled = true;
+  btn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.75s linear infinite;">
+      <circle cx="12" cy="12" r="10" stroke-opacity="0.3"/>
+      <path d="M12 2a10 10 0 0 1 10 10"/>
+    </svg>
+    アップロード中...
+  `;
+  const progressWrap = document.getElementById("uploadProgressWrap");
+  const progressBar  = document.getElementById("uploadProgressBar");
+  const progressText = document.getElementById("uploadProgressText");
+  progressWrap.classList.add("visible");
+  progressBar.style.width = "0%";
+  progressText.textContent = "0%";
+
+  const total = uploadFiles.length;
+  let done = 0;
+  let hasError = false;
+
+  for (const file of uploadFiles) {
+    try {
+      const rawPath = file._s3path || file.name;
+      const s3Key   = buildS3Key(rawPath);
+      await uploadFileToS3(file, s3Key);
+    } catch(e) {
+      console.error("アップロードエラー:", file.name, e);
+      hasError = true;
+    }
+    done++;
+    const pct = Math.round((done / total) * 100);
+    progressBar.style.width = pct + "%";
+    progressText.textContent = pct + "%";
+  }
+
+  setTimeout(() => {
+    if (!hasError) { showUploadSuccess(); } else { showUploadFail(); }
+  }, 300);
+}
+
+function showUploadSuccess(){
+  document.getElementById("uploadFormArea").style.display = "none";
+  const result = document.getElementById("uploadResult");
+  result.classList.add("visible");
+  // ホバーで少しゆっくり表示（transitionで実装済み）
+  setTimeout(() => {
+    document.getElementById("uploadResultTitle").classList.add("show");
+  }, 50);
+  setTimeout(() => {
+    document.getElementById("uploadResultNuts").classList.add("show");
+  }, 200);
+  setTimeout(() => {
+    document.getElementById("uploadResultActions").classList.add("show");
+  }, 500);
+}
+
+function showUploadFail(){
+  document.getElementById("uploadFormArea").style.display = "none";
+  const fail = document.getElementById("uploadFail");
+  fail.classList.add("visible");
+  setTimeout(() => {
+    document.getElementById("uploadFailTitle").classList.add("show");
+  }, 50);
+  setTimeout(() => {
+    document.getElementById("uploadFailNuts").classList.add("show");
+  }, 200);
+  setTimeout(() => {
+    document.getElementById("uploadFailActions").classList.add("show");
+  }, 500);
+}
+
+function onTagEdit(){
+  showToast("タグ編集機能は準備中です");
+}
+
+function onUploadLater(){
+  closeUploadPanel();
+  showToast("後でタグを編集できます");
+}
+
+function onContactAdmin(){
+  showToast("管理者へのメール送信機能は準備中です");
+}
+
+function onUploadCancel(){
+  resetUploadForm();
+}
+
+/* =====================================================
+   絞り込みパネル（search.html と同様）
+===================================================== */
+function toggleFilterPanel(){
+  const btn = document.getElementById("filterToggleBtn");
+  btn.classList.toggle("active");
+  const isActive = btn.classList.contains("active");
+  showToast(isActive ? "絞り込み：タグで絞り込み中" : "絞り込みを解除しました");
+  // 将来的にフィルターパネルを追加する場合はここで開閉処理を追加
+}
+
+/* =====================================================
+   アクションタブ切り替え
+===================================================== */
+function switchListTab(tab){
+  document.querySelectorAll(".list-action-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".list-action-content").forEach(c => c.classList.remove("active"));
+  const tabId = "listTabBtn" + tab.charAt(0).toUpperCase() + tab.slice(1);
+  const contentId = "listTabContent" + tab.charAt(0).toUpperCase() + tab.slice(1);
+  const tabEl = document.getElementById(tabId);
+  const contentEl = document.getElementById(contentId);
+  if(tabEl) tabEl.classList.add("active");
+  if(contentEl) contentEl.classList.add("active");
+}
+
+/* =====================================================
+   サイドバー
+===================================================== */
+function openSidebar(){
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("sidebarOverlay").classList.add("open");
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarOverlay").classList.remove("open");
+}
+
+/* =====================================================
+   タグフィルター（search.html と同期）
+===================================================== */
+function filterTag(tag, el){
+  currentTag = tag;
+  document.querySelectorAll(".header-tags .tag").forEach(t => t.classList.remove("active"));
+  if(el) el.classList.add("active");
+  renderList();
+}
+
+/* =====================================================
+   検索
+===================================================== */
+function onSearchInput(keyword){
+  currentKeyword = keyword.trim();
+  renderList();
+}
+
+/* =====================================================
+   フィルター適用
+===================================================== */
+function getFiltered(){
+  let data = materials;
+  if(currentTag !== "all") data = data.filter(i => i.tag === currentTag);
+  if(currentKeyword) data = data.filter(i =>
+    i.name.includes(currentKeyword) || i.tag.includes(currentKeyword) || i.ext.includes(currentKeyword.toUpperCase())
+  );
+  return data;
+}
+
+/* =====================================================
+   リスト描画
+===================================================== */
+function renderList(){
+  filteredData = getFiltered();
+  document.getElementById("listCount").textContent = filteredData.length;
+
+  const body = document.getElementById("listBody");
+  body.innerHTML = "";
+
+  if(filteredData.length === 0){
+    body.innerHTML = `<p style="color:#bbb;font-size:13px;text-align:center;padding:32px 16px;">該当する素材がありません</p>`;
+    document.getElementById("selectAllChk").checked = false;
+    return;
+  }
+
+  filteredData.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "list-item" + (selectedItem && selectedItem.id === item.id ? " active" : "");
+    row.dataset.id = item.id;
+
+    row.innerHTML = `
+      <input type="checkbox" class="item-chk" data-id="${item.id}" onclick="event.stopPropagation()" onchange="onCheckChange()" />
+      <div class="skeleton-thumb" id="thumb-sk-${item.id}"></div>
+      <img class="list-thumb" id="thumb-${item.id}" src="" alt="${item.name}" style="display:none;" />
+      <div class="list-info">
+        <div class="list-name" id="name-${item.id}">${item.name}</div>
+        <div class="list-meta">
+          <span class="list-ext-badge">${item.ext}</span>
+          <span>${item.tag}</span>
+        </div>
+      </div>
+      <div class="list-item-actions">
+        <div class="item-action-btn copy-btn" onclick="event.stopPropagation(); openCopyLinkModalFor(${item.id})" title="リンクをコピー">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <div class="item-action-btn" onclick="event.stopPropagation(); openRenameModalFor(${item.id})" title="名称変更">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+        <div class="item-action-btn delete-btn-item" onclick="event.stopPropagation(); openDeleteSingleModal(${item.id})" title="削除">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          </svg>
+        </div>
+      </div>
+    `;
+
+    row.addEventListener("click", () => selectItem(item));
+    body.appendChild(row);
+
+    // サムネイル非同期ロード
+    const img = document.getElementById(`thumb-${item.id}`);
+    const sk  = document.getElementById(`thumb-sk-${item.id}`);
+    const loader = new Image();
+    loader.onload = loader.onerror = () => {
+      img.src = loader.src;
+      img.style.display = "block";
+      if(sk) sk.style.display = "none";
+    };
+    loader.src = item.src;
+  });
+
+  // 全選択チェックボックス状態更新
+  updateSelectAllState();
+}
+
+/* =====================================================
+   アイテム選択 → プレビュー
+===================================================== */
+function selectItem(item){
+  selectedItem = item;
+
+  // リストのアクティブ状態更新
+  document.querySelectorAll(".list-item").forEach(r => {
+    r.classList.toggle("active", parseInt(r.dataset.id) === item.id);
+  });
+
+  // プレビュー表示
+  document.getElementById("previewEmpty").style.display = "none";
+  const content = document.getElementById("previewContent");
+  content.classList.add("visible");
+
+  document.getElementById("previewName").textContent = item.name;
+
+  // プレビュー画像エリア
+  const imgArea = document.getElementById("previewImgArea");
+  imgArea.innerHTML = "";
+
+  if(item.fileType === "image"){
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = item.name;
+    imgArea.appendChild(img);
+  } else if(item.fileType === "html"){
+    const iframe = document.createElement("iframe");
+    iframe.src = item.src;
+    iframe.title = item.name;
+    imgArea.appendChild(iframe);
+  } else {
+    // PDF等
+    const placeholder = document.createElement("div");
+    placeholder.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#aaa;";
+    placeholder.innerHTML = `
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <span style="font-size:13px;">${item.ext} ファイル</span>
+    `;
+    imgArea.appendChild(placeholder);
+  }
+
+  // メタ情報
+  const typeLabels   = {image:"画像", print:"紙媒体", site:"サイト", other:"その他"};
+  const subcatLabels = {photo:"写真", illust:"イラスト", apbook:"APブック", flyer:"チラシ", lp:"LP"};
+  const bgLabels     = {white:"白", transparent:"透過", all:"―"};
+  document.getElementById("previewMetaBar").innerHTML = `
+    <div class="meta-item"><div class="meta-label">種別</div><div class="meta-value">${typeLabels[item.type] || item.type}</div></div>
+    <div class="meta-item"><div class="meta-label">カテゴリ</div><div class="meta-value">${subcatLabels[item.subcat] || item.subcat}</div></div>
+    <div class="meta-item"><div class="meta-label">タグ</div><div class="meta-value">${item.tag}</div></div>
+    <div class="meta-item"><div class="meta-label">形式</div><div class="meta-value">${item.ext}</div></div>
+    <div class="meta-item"><div class="meta-label">背景</div><div class="meta-value">${bgLabels[item.bg] || item.bg}</div></div>
+  `;
+}
+
+/* =====================================================
+   全選択
+===================================================== */
+function toggleSelectAll(checked){
+  document.querySelectorAll(".item-chk").forEach(chk => { chk.checked = checked; });
+}
+
+function onCheckChange(){
+  updateSelectAllState();
+}
+
+function updateSelectAllState(){
+  const all  = document.querySelectorAll(".item-chk");
+  const chkd = document.querySelectorAll(".item-chk:checked");
+  const allChk = document.getElementById("selectAllChk");
+  if(all.length === 0){
+    allChk.checked = false;
+    allChk.indeterminate = false;
+  } else if(chkd.length === all.length){
+    allChk.checked = true;
+    allChk.indeterminate = false;
+  } else if(chkd.length === 0){
+    allChk.checked = false;
+    allChk.indeterminate = false;
+  } else {
+    allChk.checked = false;
+    allChk.indeterminate = true;
+  }
+}
+
+/* =====================================================
+   複製
+===================================================== */
+function duplicateSelected(){
+  const checked = document.querySelectorAll(".item-chk:checked");
+  if(checked.length === 0){
+    showToast("複製する素材を選択してください");
+    return;
+  }
+  const ids = [...checked].map(c => parseInt(c.dataset.id));
+  const newItems = [];
+  ids.forEach(id => {
+    const orig = materials.find(m => m.id === id);
+    if(!orig) return;
+    const copy = Object.assign({}, orig, {
+      id: nextId++,
+      name: orig.name + " (コピー)"
+    });
+    newItems.push(copy);
+  });
+  // 元アイテムの直後に挿入
+  const lastId = ids[ids.length - 1];
+  const lastIdx = materials.findIndex(m => m.id === lastId);
+  materials.splice(lastIdx + 1, 0, ...newItems);
+  renderList();
+  showToast(`${newItems.length}件を複製しました`);
+}
+
+/* =====================================================
+   削除
+===================================================== */
+let deleteTargetIds = [];
+
+function deleteSelected(){
+  const checked = document.querySelectorAll(".item-chk:checked");
+  if(checked.length === 0){
+    showToast("削除する素材を選択してください");
+    return;
+  }
+  deleteTargetIds = [...checked].map(c => parseInt(c.dataset.id));
+  deleteMode = "selected";
+  document.getElementById("deleteConfirmText").innerHTML =
+    `選択した <strong>${deleteTargetIds.length}件</strong> の素材を削除しますか？<br>この操作は取り消せません。`;
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function deleteAll(){
+  if(filteredData.length === 0){
+    showToast("削除する素材がありません");
+    return;
+  }
+  deleteTargetIds = filteredData.map(i => i.id);
+  deleteMode = "all";
+  document.getElementById("deleteConfirmText").innerHTML =
+    `表示中の <strong>${deleteTargetIds.length}件</strong> の素材をすべて削除しますか？<br>この操作は取り消せません。`;
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function openDeleteSingleModal(id){
+  const item = materials.find(m => m.id === id);
+  if(!item) return;
+  deleteTargetIds = [id];
+  deleteMode = "selected";
+  document.getElementById("deleteConfirmText").innerHTML =
+    `「<strong>${item.name}</strong>」を削除しますか？<br>この操作は取り消せません。`;
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function executeDelete(){
+  materials = materials.filter(m => !deleteTargetIds.includes(m.id));
+  if(selectedItem && deleteTargetIds.includes(selectedItem.id)){
+    selectedItem = null;
+    document.getElementById("previewEmpty").style.display = "";
+    document.getElementById("previewContent").classList.remove("visible");
+  }
+  closeDeleteModal();
+  renderList();
+  showToast(`${deleteTargetIds.length}件を削除しました`);
+  deleteTargetIds = [];
+}
+
+function closeDeleteModal(){ document.getElementById("deleteModal").classList.remove("open"); }
+function closeDeleteOnOverlay(e){ if(e.target === document.getElementById("deleteModal")) closeDeleteModal(); }
+
+/* =====================================================
+   名称変更
+===================================================== */
+let renameTargetId = null;
+
+function openRenameModal(){
+  if(!selectedItem){ showToast("素材を選択してください"); return; }
+  openRenameModalFor(selectedItem.id);
+}
+
+function openRenameModalFor(id){
+  const item = materials.find(m => m.id === id);
+  if(!item) return;
+  renameTargetId = id;
+  document.getElementById("renameInput").value = item.name;
+  document.getElementById("renameModal").classList.add("open");
+  setTimeout(() => {
+    const inp = document.getElementById("renameInput");
+    inp.focus();
+    inp.select();
+  }, 100);
+}
+
+function doRename(){
+  const newName = document.getElementById("renameInput").value.trim();
+  if(!newName){ showToast("名称を入力してください"); return; }
+  const item = materials.find(m => m.id === renameTargetId);
+  if(!item) return;
+  item.name = newName;
+  // リスト内の名称を即時更新
+  const nameEl = document.getElementById(`name-${item.id}`);
+  if(nameEl) nameEl.textContent = newName;
+  // プレビューも更新
+  if(selectedItem && selectedItem.id === item.id){
+    document.getElementById("previewName").textContent = newName;
+    selectedItem.name = newName;
+  }
+  closeRenameModal();
+  showToast("名称を変更しました");
+}
+
+function closeRenameModal(){ document.getElementById("renameModal").classList.remove("open"); renameTargetId = null; }
+function closeRenameOnOverlay(e){ if(e.target === document.getElementById("renameModal")) closeRenameModal(); }
+
+/* =====================================================
+   リンクコピー モーダル
+===================================================== */
+function openCopyLinkModal(){
+  if(!selectedItem){ showToast("素材を選択してください"); return; }
+  openCopyLinkModalFor(selectedItem.id);
+}
+
+function openCopyLinkModalFor(id){
+  const item = materials.find(m => m.id === id);
+  if(!item) return;
+  const url = item.src;
+  document.getElementById("copyLinkInput").value = url;
+  const btn = document.getElementById("copyLinkBtn");
+  btn.classList.remove("copied");
+  btn.innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+    コピー
+  `;
+  document.getElementById("copyLinkModal").classList.add("open");
+}
+
+function doCopyLink(){
+  const url = document.getElementById("copyLinkInput").value;
+  const btn = document.getElementById("copyLinkBtn");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(() => {
+      btn.classList.add("copied");
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        コピー済み
+      `;
+      showToast("リンクをコピーしました ✓");
+    }).catch(() => fallbackCopy(url));
+  } else {
+    fallbackCopy(url);
+    btn.classList.add("copied");
+    btn.textContent = "コピー済み";
+  }
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); showToast("リンクをコピーしました ✓"); }
+  catch(e) { showToast("コピーに失敗しました"); }
+  document.body.removeChild(ta);
+}
+
+function closeCopyLinkModal(){ document.getElementById("copyLinkModal").classList.remove("open"); }
+function closeCopyLinkOnOverlay(e){ if(e.target === document.getElementById("copyLinkModal")) closeCopyLinkModal(); }
+
+/* =====================================================
+   ダウンロード
+===================================================== */
+async function downloadCurrentItem(){
+  if(!selectedItem){ showToast("素材を選択してください"); return; }
+  const item = selectedItem;
+  try {
+    const res = await fetch(item.src);
+    if(!res.ok) throw new Error();
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = item.name + "." + (item.ext || "").toLowerCase();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    showToast("ダウンロードを開始しました");
+  } catch(e) {
+    const a = document.createElement("a");
+    a.href = item.src;
+    a.download = item.name + "." + (item.ext || "").toLowerCase();
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("ダウンロードを開始しました");
+  }
+}
+
+/* =====================================================
+   別ウィンドウポップアップ
+===================================================== */
+function openSearchPopup(){
+  const w = 1100, h = 700;
+  const left = Math.max(0, (screen.width - w) / 2);
+  const top  = Math.max(0, (screen.height - h) / 2);
+  window.open("search.html", "search_popup",
+    `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+}
+
+/* =====================================================
+   ログアウト
+===================================================== */
+function confirmLogout(){
+  closeSidebar();
+  document.getElementById("logoutModal").classList.add("open");
+}
+function doLogout(){
+  showToast("ログアウトしました");
+  closeLogoutModal();
+  setTimeout(() => { window.location.href = "index.html"; }, 1000);
+}
+function closeLogoutModal(){ document.getElementById("logoutModal").classList.remove("open"); }
+function closeLogoutOnOverlay(e){ if(e.target === document.getElementById("logoutModal")) closeLogoutModal(); }
+
+/* =====================================================
+   トースト
+===================================================== */
+let toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
+}
+
+/* =====================================================
+   キーボードショートカット
+===================================================== */
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    closeCopyLinkModal();
+    closeRenameModal();
+    closeDeleteModal();
+    closeLogoutModal();
+    closeSidebar();
+  }
+});
+
+/* =====================================================
+   初期化
+===================================================== */
+renderList();
+</script>
+
+</body>
+</html>
