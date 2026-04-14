@@ -1225,11 +1225,196 @@ body {
 .contact-admin-btn:hover { background: #222; transform: translateY(-1px); }
 
 /* ===== レスポンシブ ===== */
-@media (max-width: 768px) {
-  .list-panel { width: 100%; }
-  .preview-panel { display: none; }
-  .search-wrapper { width: 160px; }
+
+/* ---- スマホ共通（〜767px） ---- */
+@media (max-width: 767px) {
+
+  /* bodyのoverflow:hiddenを解除してスクロール可能に */
+  body {
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* ヘッダー：2行レイアウトに変更 */
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  /* 1行目：ハンバーガー＋タイトル＋右側ボタン群 */
+  .hamburger-btn { order: 1; }
+  .header-title  { order: 2; flex: 1; }
+  .header-right  { order: 3; }
+
+  /* 2行目：検索バー＋絞り込みボタン（幅いっぱい） */
+  .search-wrapper {
+    order: 4;
+    flex: 1;
+    max-width: none;
+    min-width: 0;
+  }
+  .filter-toggle-btn { order: 5; }
+
+  /* タグはヘッダーでは非表示（サイドバーに移動想定） */
   .header-tags { display: none; }
+
+  /* 別ウィンドウボタンはスマホでは非表示 */
+  .popup-btn { display: none; }
+
+  /* ナッツアイコンを少し小さく */
+  .nuts-icon { width: 30px; height: 30px; }
+
+  /* メインエリア：縦積みに変更 */
+  .main-area {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  /* リストパネル：全幅・高さ自動 */
+  .list-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    overflow: visible;
+  }
+
+  /* リスト本体：高さ制限なし（スクロールはbodyで） */
+  .list-body {
+    overflow: visible;
+    max-height: none;
+  }
+
+  /* プレビューパネル：デフォルト非表示、表示時は全幅 */
+  .preview-panel {
+    display: none;
+    width: 100%;
+    min-height: 100vh;
+  }
+  .preview-panel.sp-visible {
+    display: flex;
+  }
+
+  /* プレビュートップバーに「戻る」ボタン用スペース確保 */
+  .preview-topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .preview-actions {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .preview-action-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  /* プレビュー画像エリアの高さをスマホ向けに調整 */
+  .preview-img-area {
+    min-height: 240px;
+    max-height: 50vh;
+  }
+
+  /* メタバーを縦スクロール可能に */
+  .preview-meta-bar {
+    gap: 12px;
+    overflow-x: auto;
+  }
+
+  /* アップロードフォームのパディングを縮小 */
+  .upload-form-area {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  /* ドロップゾーンの高さを縮小 */
+  .drop-zone {
+    min-height: 140px;
+    padding: 16px;
+  }
+
+  /* アップロード完了・失敗画面のパディング縮小 */
+  .upload-result,
+  .upload-fail {
+    padding: 20px 16px;
+  }
+
+  /* アップロード完了ボタン群を縦積みに */
+  .upload-result-actions,
+  .upload-fail-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .tag-edit-btn,
+  .upload-again-btn,
+  .contact-admin-btn {
+    justify-content: center;
+  }
+
+  /* モーダルのパディング調整 */
+  .modal-box {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  .modal-url-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal-copy-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* トーストをスマホ向けに調整 */
+  .toast {
+    bottom: 16px;
+    font-size: 12px;
+    padding: 9px 18px;
+    max-width: calc(100vw - 32px);
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* リストアイテムのアクションボタンを常時表示（ホバーなし） */
+  .list-item-actions {
+    opacity: 1;
+  }
+
+  /* スマホ用「プレビューに戻る」ボタン */
+  .sp-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #555;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .sp-back-btn:hover { background: #f0f0f0; border-color: #aaa; }
+}
+
+/* ---- タブレット（768px〜1023px） ---- */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .list-panel { width: 260px; }
+  .search-wrapper { max-width: 220px; }
+  .popup-btn { display: none; }
+  .header-tags { display: none; }
+}
+
+/* ---- デスクトップ（1024px以上）：スマホ用要素を非表示 ---- */
+@media (min-width: 768px) {
+  .sp-back-btn { display: none; }
 }
 </style>
 </head>
@@ -1555,6 +1740,14 @@ body {
     <!-- 選択時 -->
     <div class="preview-content" id="previewContent">
       <div class="preview-topbar">
+        <!-- スマホ用：リストに戻るボタン -->
+        <div class="sp-back-btn" onclick="closePreviewSp()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          一覧に戻る
+        </div>
         <div class="preview-name" id="previewName">—</div>
         <div class="preview-actions">
           <div class="preview-action-btn" onclick="openRenameModal()" title="名称変更">
@@ -1727,6 +1920,12 @@ function openUploadPanel(){
   // サイドバーのアクティブ状態
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("navUpload").classList.add("active");
+  // スマホ時はプレビューパネルを表示
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if(isSp){
+    document.getElementById("previewPanel").classList.add("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   // フォームリセット
   resetUploadForm();
 }
@@ -1738,6 +1937,12 @@ function closeUploadPanel(){
   document.querySelector(".nav-item[href='manage.html']").classList.add("active");
   // 未選択状態に戻す
   document.getElementById("previewEmpty").style.display = "";
+  // スマホ時はプレビューパネルを非表示に戻す
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if(isSp){
+    document.getElementById("previewPanel").classList.remove("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function resetUploadForm(){
@@ -2158,6 +2363,20 @@ function renderList(){
 }
 
 /* =====================================================
+   スマホ用：プレビューを閉じてリストに戻る
+===================================================== */
+function closePreviewSp(){
+  document.getElementById("previewPanel").classList.remove("sp-visible");
+  document.getElementById("previewContent").classList.remove("visible");
+  document.getElementById("previewEmpty").style.display = "";
+  selectedItem = null;
+  // リストのアクティブ状態をリセット
+  document.querySelectorAll(".list-item").forEach(r => r.classList.remove("active"));
+  // ページトップへスクロール
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* =====================================================
    アイテム選択 → プレビュー
 ===================================================== */
 function selectItem(item){
@@ -2167,6 +2386,13 @@ function selectItem(item){
   document.querySelectorAll(".list-item").forEach(r => {
     r.classList.toggle("active", parseInt(r.dataset.id) === item.id);
   });
+
+  // スマホ時はプレビューパネルを表示（sp-visibleクラスを付与）
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if(isSp){
+    document.getElementById("previewPanel").classList.add("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   // プレビュー表示
   document.getElementById("previewEmpty").style.display = "none";
