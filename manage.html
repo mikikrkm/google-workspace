@@ -1178,6 +1178,337 @@ body {
 /* 品番削除確認モーダル */
 #pnDeleteModal .modal-box { max-width: 400px; }
 
+/* ===== ダウンロードパネル ===== */
+.dl-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f6f8;
+  overflow: hidden;
+}
+.dl-panel.visible { display: flex; }
+
+.dl-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.dl-topbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dl-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.dl-back-btn:hover { background: #f0f0f0; border-color: #aaa; }
+
+/* ダウンロードパネル：ツールバー */
+.dl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.dl-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 160px;
+  max-width: 300px;
+}
+.dl-search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px; height: 13px;
+  color: #aaa;
+  pointer-events: none;
+}
+.dl-search {
+  width: 100%;
+  padding: 8px 10px 8px 28px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  outline: none;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dl-search:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+.dl-filter-select {
+  padding: 8px 28px 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 12px;
+  color: #444;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  transition: border-color 0.2s;
+}
+.dl-filter-select:focus { border-color: #0066ff; }
+
+.dl-count-badge {
+  font-size: 11px;
+  color: #888;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.dl-count-badge strong { color: #333; }
+
+.dl-view-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.dl-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  color: #888;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.dl-view-btn:hover { background: #f0f0f0; border-color: #aaa; color: #444; }
+.dl-view-btn.active { background: #eef3ff; border-color: #0066ff; color: #0066ff; }
+
+/* ダウンロードパネル：全選択バー */
+.dl-select-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #666;
+}
+.dl-select-bar input[type="checkbox"] {
+  accent-color: #0066ff;
+  width: 14px; height: 14px;
+  cursor: pointer;
+}
+.dl-selected-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: #888;
+}
+.dl-selected-count strong { color: #0066ff; }
+
+/* ダウンロードパネル：コンテンツ本体 */
+.dl-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* リスト表示 */
+.dl-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.dl-list-item:hover { background: #f5f6f8; border-color: #ddd; }
+.dl-list-item.checked { background: #eef3ff; border-color: #b3c9ff; }
+.dl-list-item input[type="checkbox"] {
+  accent-color: #0066ff;
+  width: 14px; height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dl-list-thumb {
+  width: 44px; height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #eee;
+}
+.dl-list-info { flex: 1; min-width: 0; }
+.dl-list-name {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dl-list-meta {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+}
+.dl-ext-badge {
+  background: #e8e8e8;
+  color: #555;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* グリッド表示 */
+.dl-grid {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.dl-grid.visible { display: grid; }
+.dl-grid-card {
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  position: relative;
+  user-select: none;
+}
+.dl-grid-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); border-color: #ccc; }
+.dl-grid-card.checked { border-color: #0066ff; box-shadow: 0 0 0 2px rgba(0,102,255,0.15); }
+.dl-grid-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #f0f0f0;
+  position: relative;
+  overflow: hidden;
+}
+.dl-grid-thumb-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 品番オーバーレイ */
+.dl-grid-pn-badge {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 3px 6px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dl-grid-chk {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 18px; height: 18px;
+  accent-color: #0066ff;
+  cursor: pointer;
+}
+.dl-grid-info {
+  padding: 7px 9px;
+}
+.dl-grid-name {
+  font-size: 11px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dl-grid-meta {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* ダウンロードフッター */
+.dl-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: white;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+}
+.dl-execute-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 3px 10px rgba(0,80,200,0.28);
+  user-select: none;
+  letter-spacing: 0.03em;
+}
+.dl-execute-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0,80,200,0.36);
+}
+.dl-execute-btn:active { transform: translateY(0); }
+.dl-execute-btn:disabled {
+  background: #ccc;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+.dl-footer-info {
+  font-size: 12px;
+  color: #aaa;
+}
+.dl-footer-info strong { color: #0066ff; }
+
 /* ===== アップロードカテゴリタブ ===== */
 .tabs {
   display: flex;
@@ -1918,7 +2249,7 @@ body {
       </svg>
       アップロード
     </a>
-    <a class="nav-item" href="#" onclick="showToast('ダウンロード機能は準備中です'); return false;">
+    <a class="nav-item" id="navDownload" href="#" onclick="openDownloadPanel(); closeSidebar(); return false;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
@@ -2211,6 +2542,88 @@ body {
       </div>
     </div>
     <!-- /アップロードパネル -->
+
+    <!-- ===== ダウンロードパネル ===== -->
+    <div class="dl-panel" id="dlPanel">
+      <!-- トップバー -->
+      <div class="dl-topbar">
+        <div class="dl-topbar-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          ダウンロード
+        </div>
+        <div class="dl-back-btn" onclick="closeDownloadPanel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          戻る
+        </div>
+      </div>
+      <!-- ツールバー -->
+      <div class="dl-toolbar">
+        <div class="dl-search-wrap">
+          <svg class="dl-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+          <input class="dl-search" id="dlSearchInput" placeholder="素材名・タグで検索..." oninput="onDlSearch()" />
+        </div>
+        <select class="dl-filter-select" id="dlTagFilter" onchange="onDlFilter()">
+          <option value="all">すべてのタグ</option>
+          <option value="食事">食事</option>
+          <option value="介助">介助</option>
+          <option value="車椅子">車椅子</option>
+          <option value="リハビリ">リハビリ</option>
+          <option value="会話">会話</option>
+        </select>
+        <select class="dl-filter-select" id="dlTypeFilter" onchange="onDlFilter()">
+          <option value="all">すべての種別</option>
+          <option value="image">画像</option>
+          <option value="print">紙媒体</option>
+          <option value="site">サイト</option>
+          <option value="other">その他</option>
+        </select>
+        <div class="dl-count-badge"><strong id="dlCount">0</strong> 件</div>
+        <div class="dl-view-btns">
+          <div class="dl-view-btn active" id="dlViewList" onclick="setDlView('list')" title="リスト表示">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </div>
+          <div class="dl-view-btn" id="dlViewGrid" onclick="setDlView('grid')" title="グリッド表示">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <!-- 全選択バー -->
+      <div class="dl-select-bar">
+        <input type="checkbox" id="dlSelectAll" onchange="toggleDlSelectAll(this.checked)" />
+        <label for="dlSelectAll" style="cursor:pointer;user-select:none;">すべて選択</label>
+        <div class="dl-selected-count"><strong id="dlSelectedCount">0</strong> 件選択中</div>
+      </div>
+      <!-- コンテンツ本体 -->
+      <div class="dl-body" id="dlBody"></div>
+      <!-- フッター -->
+      <div class="dl-footer">
+        <button type="button" class="dl-execute-btn" id="dlExecuteBtn" onclick="executeDlDownload()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          選択してダウンロード
+        </button>
+        <div class="dl-footer-info" id="dlFooterInfo">素材を選択してください</div>
+      </div>
+    </div>
+    <!-- /ダウンロードパネル -->
 
     <!-- ===== 品番管理パネル ===== -->
     <div class="partnumber-panel" id="partNumberPanel">
@@ -3394,6 +3807,260 @@ document.addEventListener("keydown", e => {
     closeSidebar();
   }
 });
+
+/* =====================================================
+   ダウンロードパネル
+===================================================== */
+let dlKeyword   = "";
+let dlTagFilter = "all";
+let dlTypeFilter = "all";
+let dlView      = "list";  // "list" | "grid"
+let dlChecked   = new Set(); // 選択中のID（数値）
+
+function openDownloadPanel() {
+  document.getElementById("previewEmpty").style.display = "none";
+  document.getElementById("previewContent").classList.remove("visible");
+  document.getElementById("uploadPanel").classList.remove("visible");
+  document.getElementById("partNumberPanel").classList.remove("visible");
+  document.getElementById("dlPanel").classList.add("visible");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("navDownload").classList.add("active");
+  // 状態リセット
+  dlKeyword    = "";
+  dlTagFilter  = "all";
+  dlTypeFilter = "all";
+  dlView       = "list";
+  dlChecked    = new Set();
+  document.getElementById("dlSearchInput").value = "";
+  document.getElementById("dlTagFilter").value   = "all";
+  document.getElementById("dlTypeFilter").value  = "all";
+  setDlView("list");
+  renderDlData();
+}
+
+function closeDownloadPanel() {
+  document.getElementById("dlPanel").classList.remove("visible");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.querySelector(".nav-item[href='manage.html']").classList.add("active");
+  document.getElementById("previewEmpty").style.display = "";
+}
+
+/* 検索・フィルター */
+function onDlSearch() {
+  dlKeyword = document.getElementById("dlSearchInput").value.trim();
+  renderDlData();
+}
+function onDlFilter() {
+  dlTagFilter  = document.getElementById("dlTagFilter").value;
+  dlTypeFilter = document.getElementById("dlTypeFilter").value;
+  renderDlData();
+}
+
+/* 表示切替 */
+function setDlView(mode) {
+  dlView = mode;
+  document.getElementById("dlViewList").classList.toggle("active", mode === "list");
+  document.getElementById("dlViewGrid").classList.toggle("active", mode === "grid");
+  renderDlData();
+}
+
+/* フィルター済みデータ */
+function getDlFiltered() {
+  let data = materials.slice();
+  if (dlTagFilter !== "all")  data = data.filter(i => i.tag  === dlTagFilter);
+  if (dlTypeFilter !== "all") data = data.filter(i => i.type === dlTypeFilter);
+  if (dlKeyword) {
+    const kw = dlKeyword.toLowerCase();
+    data = data.filter(i =>
+      i.name.toLowerCase().includes(kw) ||
+      i.tag.toLowerCase().includes(kw) ||
+      i.ext.toLowerCase().includes(kw)
+    );
+  }
+  return data;
+}
+
+/* 描画メイン */
+function renderDlData() {
+  const data = getDlFiltered();
+  document.getElementById("dlCount").textContent = data.length;
+  updateDlSelectAllState(data);
+  updateDlFooter();
+
+  if (dlView === "list") {
+    renderDlList(data);
+  } else {
+    renderDlGrid(data);
+  }
+}
+
+/* リスト描画 */
+function renderDlList(data) {
+  const body = document.getElementById("dlBody");
+  body.innerHTML = "";
+  if (data.length === 0) {
+    body.innerHTML = `<p style="color:#bbb;font-size:13px;text-align:center;padding:32px 0;">該当する素材がありません</p>`;
+    return;
+  }
+  // リスト表示
+  data.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "dl-list-item" + (dlChecked.has(item.id) ? " checked" : "");
+    div.dataset.id = item.id;
+    div.innerHTML = `
+      <input type="checkbox" class="dl-item-chk" data-id="${item.id}"
+        ${dlChecked.has(item.id) ? "checked" : ""}
+        onclick="event.stopPropagation()"
+        onchange="onDlCheckChange(${item.id}, this.checked)" />
+      <img class="dl-list-thumb" src="${item.src}" alt="${item.name}"
+        onerror="this.style.background='#eee'" />
+      <div class="dl-list-info">
+        <div class="dl-list-name">${item.name}</div>
+        <div class="dl-list-meta">
+          <span class="dl-ext-badge">${item.ext}</span>
+          <span>${item.tag}</span>
+        </div>
+      </div>
+    `;
+    div.addEventListener("click", () => {
+      const newState = !dlChecked.has(item.id);
+      onDlCheckChange(item.id, newState);
+    });
+    body.appendChild(div);
+  });
+}
+
+/* グリッド描画 */
+function renderDlGrid(data) {
+  const body = document.getElementById("dlBody");
+  body.innerHTML = "";
+  if (data.length === 0) {
+    body.innerHTML = `<p style="color:#bbb;font-size:13px;text-align:center;padding:32px 0;">該当する素材がありません</p>`;
+    return;
+  }
+  const grid = document.createElement("div");
+  grid.className = "dl-grid visible";
+  data.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "dl-grid-card" + (dlChecked.has(item.id) ? " checked" : "");
+    card.dataset.id = item.id;
+    // 品番IDを取得（partNumberDataから照合）
+    const pnEntry = partNumberData.find(p => p.name === item.name);
+    const pnId = pnEntry ? pnEntry.id : "";
+    card.innerHTML = `
+      <div class="dl-grid-thumb-wrap">
+        <img src="${item.src}" alt="${item.name}" onerror="this.style.display='none'" />
+        ${pnId ? `<div class="dl-grid-pn-badge">${pnId}</div>` : ""}
+        <input type="checkbox" class="dl-grid-chk dl-item-chk" data-id="${item.id}"
+          ${dlChecked.has(item.id) ? "checked" : ""}
+          onclick="event.stopPropagation()"
+          onchange="onDlCheckChange(${item.id}, this.checked)" />
+      </div>
+      <div class="dl-grid-info">
+        <div class="dl-grid-name" title="${item.name}">${item.name}</div>
+        <div class="dl-grid-meta">${item.tag} · ${item.ext}</div>
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      const newState = !dlChecked.has(item.id);
+      onDlCheckChange(item.id, newState);
+    });
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+}
+
+/* チェック変更 */
+function onDlCheckChange(id, checked) {
+  if (checked) {
+    dlChecked.add(id);
+  } else {
+    dlChecked.delete(id);
+  }
+  // DOM上のチェックボックスとカード/アイテムのクラスを同期
+  document.querySelectorAll(`.dl-item-chk[data-id="${id}"]`).forEach(chk => {
+    chk.checked = checked;
+  });
+  const item = document.querySelector(`[data-id="${id}"].dl-list-item, [data-id="${id}"].dl-grid-card`);
+  if (item) item.classList.toggle("checked", checked);
+  updateDlSelectAllState(getDlFiltered());
+  updateDlFooter();
+}
+
+/* 全選択 */
+function toggleDlSelectAll(checked) {
+  const data = getDlFiltered();
+  data.forEach(item => {
+    if (checked) {
+      dlChecked.add(item.id);
+    } else {
+      dlChecked.delete(item.id);
+    }
+  });
+  renderDlData();
+}
+
+function updateDlSelectAllState(data) {
+  const allChk = document.getElementById("dlSelectAll");
+  if (!allChk) return;
+  const checkedInView = data.filter(i => dlChecked.has(i.id)).length;
+  if (data.length === 0) {
+    allChk.checked = false;
+    allChk.indeterminate = false;
+  } else if (checkedInView === data.length) {
+    allChk.checked = true;
+    allChk.indeterminate = false;
+  } else if (checkedInView === 0) {
+    allChk.checked = false;
+    allChk.indeterminate = false;
+  } else {
+    allChk.checked = false;
+    allChk.indeterminate = true;
+  }
+}
+
+/* フッター更新 */
+function updateDlFooter() {
+  const count = dlChecked.size;
+  document.getElementById("dlSelectedCount").innerHTML = `<strong>${count}</strong>`;
+  const btn = document.getElementById("dlExecuteBtn");
+  btn.disabled = count === 0;
+  const info = document.getElementById("dlFooterInfo");
+  info.innerHTML = count > 0
+    ? `<strong>${count}</strong> 件を選択中`
+    : "素材を選択してください";
+}
+
+/* ダウンロード実行 */
+async function executeDlDownload() {
+  if (dlChecked.size === 0) return;
+  const targets = materials.filter(m => dlChecked.has(m.id));
+  showToast(`${targets.length}件のダウンロードを開始します`);
+  for (const item of targets) {
+    try {
+      const res = await fetch(item.src);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = item.name + "." + (item.ext || "").toLowerCase();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      await new Promise(r => setTimeout(r, 300)); // 連続DL間隔
+    } catch {
+      const a    = document.createElement("a");
+      a.href     = item.src;
+      a.download = item.name + "." + (item.ext || "").toLowerCase();
+      a.target   = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  }
+}
 
 /* =====================================================
    品番管理
