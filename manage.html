@@ -1758,6 +1758,10 @@ body {
           <div class="file-browse-label" id="fileBrowseLabel">ファイルが選択されていません</div>
           <input type="file" id="fileInput" multiple accept="image/*,application/pdf,.html,.htm" style="display:none;" onchange="onFileInputChange(this.files)" />
         </div>
+<select id="office">
+  <option value="" disabled selected>事業所を選択してください</option>
+  <option value="yasashie">やさしえ</option>
+</select>
         <!-- 切り替えタブ-->
         <div class="tabs">
           <button type="button" class="tab active" data-category="assets">素材</button>
@@ -2263,6 +2267,12 @@ function buildS3Key(filePath) {
   var rest = parts.slice(1).join("/");
 
   return `${folder}_${today}/${rest}`;
+}
+const office = document.getElementById("office").value;
+
+if (!office) {
+  alert("事業所を選択してください");
+  return;
 }
 
 // アップロード実行（実API）
