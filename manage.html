@@ -862,6 +862,142 @@ body {
   color: #bbb;
 }
 
+/* ===== 品番管理パネル ===== */
+.partnumber-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f6f8;
+  overflow-y: auto;
+}
+.partnumber-panel.visible { display: flex; }
+
+.partnumber-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.partnumber-topbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.partnumber-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.partnumber-back-btn:hover { background: #f0f0f0; border-color: #aaa; }
+
+.partnumber-body {
+  flex: 1;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+/* テーブル */
+.pn-table-wrap {
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+.pn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.pn-table thead tr {
+  background: #f5f6f8;
+  border-bottom: 1px solid #e0e0e0;
+}
+.pn-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pn-table td {
+  padding: 11px 14px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.pn-table tbody tr:last-child td { border-bottom: none; }
+.pn-table tbody tr:hover td { background: #f9f9fb; }
+
+.pn-id-badge {
+  display: inline-block;
+  background: #eef3ff;
+  color: #0052cc;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  font-family: monospace;
+}
+
+/* CSVダウンロードボタン（緑） */
+.csv-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #22a06b 0%, #1a8a58 100%);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 3px 10px rgba(26,138,88,0.28);
+  user-select: none;
+  letter-spacing: 0.03em;
+  align-self: flex-start;
+}
+.csv-download-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(26,138,88,0.36);
+}
+.csv-download-btn:active { transform: translateY(0); }
+
+.pn-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
 /* ===== アップロードカテゴリタブ ===== */
 .tabs {
   display: flex;
@@ -1610,7 +1746,7 @@ body {
       </svg>
       ダウンロード
     </a>
-    <a class="nav-item" href="#" onclick="showToast('品番管理機能は準備中です'); return false;">
+    <a class="nav-item" id="navPartNumber" href="#" onclick="openPartNumberPanel(); closeSidebar(); return false;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -1895,6 +2031,59 @@ body {
       </div>
     </div>
     <!-- /アップロードパネル -->
+
+    <!-- ===== 品番管理パネル ===== -->
+    <div class="partnumber-panel" id="partNumberPanel">
+      <div class="partnumber-topbar">
+        <div class="partnumber-topbar-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          品番管理
+        </div>
+        <div class="partnumber-back-btn" onclick="closePartNumberPanel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          戻る
+        </div>
+      </div>
+      <div class="partnumber-body">
+        <div>
+          <div class="pn-section-title">品番一覧</div>
+          <div class="pn-table-wrap">
+            <table class="pn-table" id="pnTable">
+              <thead>
+                <tr>
+                  <th>品番ID</th>
+                  <th>ファイル名</th>
+                  <th>カテゴリ</th>
+                  <th>種別</th>
+                  <th>部門</th>
+                  <th>事業所</th>
+                </tr>
+              </thead>
+              <tbody id="pnTableBody">
+                <!-- JS で描画 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <button type="button" class="csv-download-btn" onclick="downloadPartNumberCSV()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          CSVダウンロード
+        </button>
+      </div>
+    </div>
+    <!-- /品番管理パネル -->
 
     <!-- 未選択時 -->
     <div class="preview-empty" id="previewEmpty">
@@ -2960,6 +3149,68 @@ document.addEventListener("keydown", e => {
     closeSidebar();
   }
 });
+
+/* =====================================================
+   品番管理
+===================================================== */
+const partNumberData = [
+  { id: "PHO_000001", name: "ナッツ元気.png", category: "素材", type: "写真", department: "事業部別", office: "やさしえ" }
+];
+
+function openPartNumberPanel() {
+  document.getElementById("previewEmpty").style.display = "none";
+  document.getElementById("previewContent").classList.remove("visible");
+  document.getElementById("uploadPanel").classList.remove("visible");
+  document.getElementById("partNumberPanel").classList.add("visible");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("navPartNumber").classList.add("active");
+  renderPartNumberTable();
+}
+
+function closePartNumberPanel() {
+  document.getElementById("partNumberPanel").classList.remove("visible");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.querySelector(".nav-item[href='manage.html']").classList.add("active");
+  document.getElementById("previewEmpty").style.display = "";
+}
+
+function renderPartNumberTable() {
+  const tbody = document.getElementById("pnTableBody");
+  tbody.innerHTML = "";
+  partNumberData.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="pn-id-badge">${row.id}</span></td>
+      <td>${row.name}</td>
+      <td>${row.category}</td>
+      <td>${row.type}</td>
+      <td>${row.department}</td>
+      <td>${row.office}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function downloadPartNumberCSV() {
+  const headers = ["品番ID", "ファイル名", "カテゴリ", "種別", "部門", "事業所"];
+  const rows = partNumberData.map(r =>
+    [r.id, r.name, r.category, r.type, r.department, r.office]
+      .map(v => `"${String(v).replace(/"/g, '""')}"`)
+      .join(",")
+  );
+  const bom = "\uFEFF";
+  const csv = bom + [headers.join(","), ...rows].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "品番一覧.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  showToast("CSVをダウンロードしました");
+}
 
 /* =====================================================
    初期化
