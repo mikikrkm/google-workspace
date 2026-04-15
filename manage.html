@@ -2434,6 +2434,25 @@ body {
   </div>
 </div>
 
+<!-- ===== 品番削除確認 モーダル ===== -->
+<div class="modal-overlay" id="pnDeleteModal" onclick="closePnDeleteOnOverlay(event)">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">🗑 品番削除の確認</div>
+      <div class="modal-close" onclick="closePnDeleteModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirm-text" id="pnDeleteConfirmText">
+        この品番を削除しますか？<br>この操作は取り消せません。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-btn" onclick="closePnDeleteModal()">キャンセル</div>
+      <div class="modal-btn danger" onclick="executePnDelete()">削除する</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ログアウト確認 モーダル ===== -->
 <div class="modal-overlay" id="logoutModal" onclick="closeLogoutOnOverlay(event)">
   <div class="modal-box">
@@ -3504,7 +3523,7 @@ function renderPnTable(data) {
   const tbody = document.getElementById("pnTableBody");
   tbody.innerHTML = "";
   if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#bbb;padding:24px;">該当する品番がありません</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#bbb;padding:24px;">該当する品番がありません</td></tr>`;
     return;
   }
   data.forEach(row => {
@@ -3518,6 +3537,16 @@ function renderPnTable(data) {
       <td>${row.office}</td>
       <td style="color:#aaa;font-size:12px;">${row.registeredAt || "—"}</td>
       <td style="color:#aaa;font-size:12px;">${row.updatedAt || "—"}</td>
+      <td style="text-align:center;">
+        <div class="pn-delete-btn" onclick="openPnDeleteModal('${row.id}')" title="削除">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -3546,10 +3575,48 @@ function renderPnGrid(data) {
         <div class="pn-grid-id">${row.id}</div>
         <div class="pn-grid-name" title="${row.name}">${row.name}</div>
         <div class="pn-grid-meta">${row.category} · ${row.office}</div>
+        <div style="margin-top:6px;">
+          <div class="pn-delete-btn" onclick="openPnDeleteModal('${row.id}')" title="削除" style="width:100%;border-radius:4px;gap:4px;font-size:10px;padding:3px 0;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+            削除
+          </div>
+        </div>
       </div>
     `;
     grid.appendChild(card);
   });
+}
+
+/* 品番削除モーダル */
+let pnDeleteTargetId = null;
+
+function openPnDeleteModal(id) {
+  pnDeleteTargetId = id;
+  const row = partNumberData.find(r => r.id === id);
+  const name = row ? row.name : id;
+  document.getElementById("pnDeleteConfirmText").innerHTML =
+    `「<strong>${name}</strong>」（${id}）を削除しますか？<br>この操作は取り消せません。`;
+  document.getElementById("pnDeleteModal").classList.add("open");
+}
+
+function executePnDelete() {
+  if (!pnDeleteTargetId) return;
+  const idx = partNumberData.findIndex(r => r.id === pnDeleteTargetId);
+  if (idx !== -1) partNumberData.splice(idx, 1);
+  closePnDeleteModal();
+  renderPnData();
+  showToast("品番を削除しました");
+  pnDeleteTargetId = null;
+}
+
+function closePnDeleteModal() {
+  document.getElementById("pnDeleteModal").classList.remove("open");
+}
+function closePnDeleteOnOverlay(e) {
+  if (e.target === document.getElementById("pnDeleteModal")) closePnDeleteModal();
 }
 
 /* CSVダウンロード（検索・ソート後のデータを出力） */
