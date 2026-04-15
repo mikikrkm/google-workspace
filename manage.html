@@ -2205,6 +2205,94 @@ body {
     flex-shrink: 0;
   }
   .sp-back-btn:hover { background: #f0f0f0; border-color: #aaa; }
+
+  /* ---- ダウンロードパネル スマホ対応 ---- */
+  .dl-panel {
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .dl-toolbar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .dl-search-wrap {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+  .dl-filter-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .dl-count-badge {
+    margin-left: 0;
+  }
+  .dl-body {
+    padding: 12px;
+  }
+  .dl-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+  .dl-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .dl-execute-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 14px;
+  }
+  .dl-footer-info {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---- 品番管理パネル スマホ対応 ---- */
+  .partnumber-panel {
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .partnumber-body {
+    padding: 14px 12px;
+    gap: 14px;
+  }
+  .pn-toolbar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pn-search-wrap {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+  .pn-sort-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .pn-count-badge {
+    margin-left: 0;
+  }
+  /* テーブルを横スクロール可能に */
+  .pn-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pn-table {
+    min-width: 600px;
+  }
+  /* グリッドを2列に */
+  .pn-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .csv-download-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 14px;
+  }
 }
 
 /* ---- タブレット（768px〜1023px） ---- */
@@ -3825,6 +3913,13 @@ function openDownloadPanel() {
   document.getElementById("dlPanel").classList.add("visible");
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("navDownload").classList.add("active");
+  // スマホ時：リストを非表示にしてパネルのみ表示
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if (isSp) {
+    document.querySelector(".main-area").classList.add("upload-mode");
+    document.getElementById("previewPanel").classList.add("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   // 状態リセット
   dlKeyword    = "";
   dlTagFilter  = "all";
