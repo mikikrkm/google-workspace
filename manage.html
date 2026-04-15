@@ -2295,6 +2295,13 @@ async function executeUpload() {
   // 👇 ここで1回だけ取得（安定）
   const selectedCategory =
     document.querySelector(".tab.active")?.dataset.category || "assets";
+    const categoryMap = {
+  web: "サイト",
+  print: "紙媒体",
+  assets: "素材"
+};
+
+const selectedCategoryJP = categoryMap[selectedCategory];
     const office = document.getElementById("office").value;
 
 if (!office) {
@@ -2316,7 +2323,7 @@ const rawPath = (file._s3path && file._s3path !== "undefined")
       const baseKey = buildS3Key(rawPath);
 console.log("rawPath:", rawPath);
       // 👇 最終パス
-      const s3Key = `${selectedCategory}/${office}/${baseKey}`;
+      const s3Key = `${selectedCategoryJP}/${officeJP}/${baseKey}`;
 
       console.log("S3パス:", s3Key);
 
