@@ -523,6 +523,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   background: #f5f6f8;
+  position: relative;
 }
 
 .preview-empty {
@@ -866,9 +867,11 @@ body {
 .partnumber-panel {
   display: none;
   flex-direction: column;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: #f5f6f8;
   overflow-y: auto;
+  z-index: 2;
 }
 .partnumber-panel.visible { display: flex; }
 
@@ -1182,9 +1185,11 @@ body {
 .dl-panel {
   display: none;
   flex-direction: column;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: #f5f6f8;
   overflow: hidden;
+  z-index: 2;
 }
 .dl-panel.visible { display: flex; }
 
@@ -1536,9 +1541,11 @@ body {
 .upload-panel {
   display: none;
   flex-direction: column;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: #f5f6f8;
   overflow-y: auto;
+  z-index: 2;
 }
 .upload-panel.visible { display: flex; }
 
