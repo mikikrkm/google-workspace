@@ -3938,6 +3938,12 @@ function closeDownloadPanel() {
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.querySelector(".nav-item[href='manage.html']").classList.add("active");
   document.getElementById("previewEmpty").style.display = "";
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if (isSp) {
+    document.querySelector(".main-area").classList.remove("upload-mode");
+    document.getElementById("previewPanel").classList.remove("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 /* 検索・フィルター */
@@ -4184,9 +4190,17 @@ function openPartNumberPanel() {
   document.getElementById("previewEmpty").style.display = "none";
   document.getElementById("previewContent").classList.remove("visible");
   document.getElementById("uploadPanel").classList.remove("visible");
+  document.getElementById("dlPanel").classList.remove("visible");
   document.getElementById("partNumberPanel").classList.add("visible");
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("navPartNumber").classList.add("active");
+  // スマホ時：リストを非表示にしてパネルのみ表示
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if (isSp) {
+    document.querySelector(".main-area").classList.add("upload-mode");
+    document.getElementById("previewPanel").classList.add("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   // 状態リセット
   pnKeyword = "";
   pnSortKey = "id";
@@ -4204,6 +4218,12 @@ function closePartNumberPanel() {
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.querySelector(".nav-item[href='manage.html']").classList.add("active");
   document.getElementById("previewEmpty").style.display = "";
+  const isSp = window.matchMedia("(max-width: 767px)").matches;
+  if (isSp) {
+    document.querySelector(".main-area").classList.remove("upload-mode");
+    document.getElementById("previewPanel").classList.remove("sp-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 /* 検索 */
