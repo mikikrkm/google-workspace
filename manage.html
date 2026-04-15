@@ -998,6 +998,167 @@ body {
   margin-bottom: 8px;
 }
 
+/* 品番管理：ツールバー */
+.pn-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.pn-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 160px;
+  max-width: 320px;
+}
+.pn-search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px; height: 13px;
+  color: #aaa;
+  pointer-events: none;
+}
+.pn-search {
+  width: 100%;
+  padding: 8px 10px 8px 28px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  outline: none;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pn-search:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+.pn-sort-select {
+  padding: 8px 28px 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 12px;
+  color: #444;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  transition: border-color 0.2s;
+}
+.pn-sort-select:focus { border-color: #0066ff; }
+
+.pn-order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  user-select: none;
+}
+.pn-order-btn:hover { background: #f0f0f0; border-color: #aaa; }
+.pn-order-btn.asc  { color: #0066ff; border-color: #0066ff; background: #eef3ff; }
+.pn-order-btn.desc { color: #0066ff; border-color: #0066ff; background: #eef3ff; }
+
+.pn-view-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.pn-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  color: #888;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.pn-view-btn:hover { background: #f0f0f0; border-color: #aaa; color: #444; }
+.pn-view-btn.active { background: #eef3ff; border-color: #0066ff; color: #0066ff; }
+
+/* 品番管理：グリッド表示 */
+.pn-grid {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.pn-grid.visible { display: grid; }
+.pn-grid-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.pn-grid-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); transform: translateY(-2px); }
+.pn-grid-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 11px;
+}
+.pn-grid-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pn-grid-info {
+  padding: 8px 10px;
+}
+.pn-grid-id {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0052cc;
+  font-family: monospace;
+  background: #eef3ff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.pn-grid-name {
+  font-size: 11px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pn-grid-meta {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* 件数バッジ */
+.pn-count-badge {
+  font-size: 11px;
+  color: #888;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.pn-count-badge strong { color: #333; }
+
+/* テーブル非表示切替 */
+.pn-table-wrap.hidden { display: none; }
+
 /* ===== アップロードカテゴリタブ ===== */
 .tabs {
   display: flex;
@@ -2053,26 +2214,71 @@ body {
         </div>
       </div>
       <div class="partnumber-body">
-        <div>
-          <div class="pn-section-title">品番一覧</div>
-          <div class="pn-table-wrap">
-            <table class="pn-table" id="pnTable">
-              <thead>
-                <tr>
-                  <th>品番ID</th>
-                  <th>ファイル名</th>
-                  <th>カテゴリ</th>
-                  <th>種別</th>
-                  <th>部門</th>
-                  <th>事業所</th>
-                </tr>
-              </thead>
-              <tbody id="pnTableBody">
-                <!-- JS で描画 -->
-              </tbody>
-            </table>
+
+        <!-- ツールバー：検索・ソート・表示切替 -->
+        <div class="pn-toolbar">
+          <!-- 検索 -->
+          <div class="pn-search-wrap">
+            <svg class="pn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+            </svg>
+            <input class="pn-search" id="pnSearchInput" placeholder="品番・ファイル名で検索..." oninput="onPnSearch()" />
+          </div>
+          <!-- ソートキー -->
+          <select class="pn-sort-select" id="pnSortKey" onchange="onPnSort()">
+            <option value="id">品番順</option>
+            <option value="name">ファイル名順</option>
+            <option value="registeredAt">登録日</option>
+            <option value="updatedAt">更新日</option>
+          </select>
+          <!-- 昇順/降順 -->
+          <div class="pn-order-btn" id="pnOrderBtn" onclick="togglePnOrder()" title="昇順/降順切替">
+            <svg id="pnOrderIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            </svg>
+          </div>
+          <!-- 件数 -->
+          <div class="pn-count-badge"><strong id="pnCount">0</strong> 件</div>
+          <!-- 表示切替 -->
+          <div class="pn-view-btns">
+            <div class="pn-view-btn active" id="pnViewList" onclick="setPnView('list')" title="リスト表示">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+              </svg>
+            </div>
+            <div class="pn-view-btn" id="pnViewGrid" onclick="setPnView('grid')" title="グリッド表示">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+            </div>
           </div>
         </div>
+
+        <!-- リスト表示 -->
+        <div class="pn-table-wrap" id="pnTableWrap">
+          <table class="pn-table">
+            <thead>
+              <tr>
+                <th>品番ID</th>
+                <th>ファイル名</th>
+                <th>カテゴリ</th>
+                <th>種別</th>
+                <th>部門</th>
+                <th>事業所</th>
+                <th>登録日</th>
+                <th>更新日</th>
+              </tr>
+            </thead>
+            <tbody id="pnTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- グリッド表示 -->
+        <div class="pn-grid" id="pnGrid"></div>
+
+        <!-- CSVダウンロード -->
         <button type="button" class="csv-download-btn" onclick="downloadPartNumberCSV()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -3154,8 +3360,24 @@ document.addEventListener("keydown", e => {
    品番管理
 ===================================================== */
 const partNumberData = [
-  { id: "PHO_000001", name: "ナッツ元気.png", category: "素材", type: "写真", department: "事業部別", office: "やさしえ" }
+  {
+    id: "PHO_000001",
+    name: "ナッツ元気.png",
+    category: "素材",
+    type: "写真",
+    department: "事業部別",
+    office: "やさしえ",
+    src: "img/ナッツ_元気.png",
+    registeredAt: "2025-10-01",
+    updatedAt: "2026-03-15"
+  }
 ];
+
+// 品番管理の状態
+let pnKeyword  = "";
+let pnSortKey  = "id";
+let pnOrder    = "asc";   // "asc" | "desc"
+let pnView     = "list";  // "list" | "grid"
 
 function openPartNumberPanel() {
   document.getElementById("previewEmpty").style.display = "none";
@@ -3164,7 +3386,16 @@ function openPartNumberPanel() {
   document.getElementById("partNumberPanel").classList.add("visible");
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("navPartNumber").classList.add("active");
-  renderPartNumberTable();
+  // 状態リセット
+  pnKeyword = "";
+  pnSortKey = "id";
+  pnOrder   = "asc";
+  pnView    = "list";
+  document.getElementById("pnSearchInput").value = "";
+  document.getElementById("pnSortKey").value = "id";
+  updatePnOrderBtn();
+  setPnView("list");
+  renderPnData();
 }
 
 function closePartNumberPanel() {
@@ -3174,10 +3405,89 @@ function closePartNumberPanel() {
   document.getElementById("previewEmpty").style.display = "";
 }
 
-function renderPartNumberTable() {
+/* 検索 */
+function onPnSearch() {
+  pnKeyword = document.getElementById("pnSearchInput").value.trim();
+  renderPnData();
+}
+
+/* ソートキー変更 */
+function onPnSort() {
+  pnSortKey = document.getElementById("pnSortKey").value;
+  renderPnData();
+}
+
+/* 昇順/降順トグル */
+function togglePnOrder() {
+  pnOrder = pnOrder === "asc" ? "desc" : "asc";
+  updatePnOrderBtn();
+  renderPnData();
+}
+
+function updatePnOrderBtn() {
+  const btn  = document.getElementById("pnOrderBtn");
+  const icon = document.getElementById("pnOrderIcon");
+  btn.className = "pn-order-btn " + pnOrder;
+  if (pnOrder === "asc") {
+    icon.innerHTML = `<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>`;
+  } else {
+    icon.innerHTML = `<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>`;
+  }
+}
+
+/* 表示切替 */
+function setPnView(mode) {
+  pnView = mode;
+  document.getElementById("pnViewList").classList.toggle("active", mode === "list");
+  document.getElementById("pnViewGrid").classList.toggle("active", mode === "grid");
+  document.getElementById("pnTableWrap").classList.toggle("hidden", mode !== "list");
+  document.getElementById("pnGrid").classList.toggle("visible", mode === "grid");
+  renderPnData();
+}
+
+/* フィルター＋ソート済みデータを返す */
+function getPnFiltered() {
+  let data = partNumberData.slice();
+  if (pnKeyword) {
+    const kw = pnKeyword.toLowerCase();
+    data = data.filter(r =>
+      r.id.toLowerCase().includes(kw) ||
+      r.name.toLowerCase().includes(kw) ||
+      r.category.toLowerCase().includes(kw) ||
+      r.office.toLowerCase().includes(kw)
+    );
+  }
+  data.sort((a, b) => {
+    let va = a[pnSortKey] || "";
+    let vb = b[pnSortKey] || "";
+    if (va < vb) return pnOrder === "asc" ? -1 : 1;
+    if (va > vb) return pnOrder === "asc" ?  1 : -1;
+    return 0;
+  });
+  return data;
+}
+
+/* 描画メイン */
+function renderPnData() {
+  const data = getPnFiltered();
+  document.getElementById("pnCount").textContent = data.length;
+
+  if (pnView === "list") {
+    renderPnTable(data);
+  } else {
+    renderPnGrid(data);
+  }
+}
+
+/* テーブル描画 */
+function renderPnTable(data) {
   const tbody = document.getElementById("pnTableBody");
   tbody.innerHTML = "";
-  partNumberData.forEach(row => {
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#bbb;padding:24px;">該当する品番がありません</td></tr>`;
+    return;
+  }
+  data.forEach(row => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><span class="pn-id-badge">${row.id}</span></td>
@@ -3186,15 +3496,48 @@ function renderPartNumberTable() {
       <td>${row.type}</td>
       <td>${row.department}</td>
       <td>${row.office}</td>
+      <td style="color:#aaa;font-size:12px;">${row.registeredAt || "—"}</td>
+      <td style="color:#aaa;font-size:12px;">${row.updatedAt || "—"}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
+/* グリッド描画 */
+function renderPnGrid(data) {
+  const grid = document.getElementById("pnGrid");
+  grid.innerHTML = "";
+  if (data.length === 0) {
+    grid.innerHTML = `<p style="color:#bbb;font-size:13px;grid-column:1/-1;text-align:center;padding:24px 0;">該当する品番がありません</p>`;
+    return;
+  }
+  data.forEach(row => {
+    const card = document.createElement("div");
+    card.className = "pn-grid-card";
+    const hasImg = row.src;
+    card.innerHTML = `
+      <div class="pn-grid-thumb">
+        ${hasImg
+          ? `<img src="${row.src}" alt="${row.name}" onerror="this.parentElement.innerHTML='<span style=\\'color:#ccc;font-size:11px;\\'>No Image</span>'" />`
+          : `<span style="color:#ccc;font-size:11px;">No Image</span>`
+        }
+      </div>
+      <div class="pn-grid-info">
+        <div class="pn-grid-id">${row.id}</div>
+        <div class="pn-grid-name" title="${row.name}">${row.name}</div>
+        <div class="pn-grid-meta">${row.category} · ${row.office}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* CSVダウンロード（検索・ソート後のデータを出力） */
 function downloadPartNumberCSV() {
-  const headers = ["品番ID", "ファイル名", "カテゴリ", "種別", "部門", "事業所"];
-  const rows = partNumberData.map(r =>
-    [r.id, r.name, r.category, r.type, r.department, r.office]
+  const data = getPnFiltered();
+  const headers = ["品番ID", "ファイル名", "カテゴリ", "種別", "部門", "事業所", "登録日", "更新日"];
+  const rows = data.map(r =>
+    [r.id, r.name, r.category, r.type, r.department, r.office, r.registeredAt || "", r.updatedAt || ""]
       .map(v => `"${String(v).replace(/"/g, '""')}"`)
       .join(",")
   );
