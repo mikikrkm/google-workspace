@@ -818,6 +818,50 @@ body {
   100% { background-position: -200% 0; }
 }
 
+/* ===== 事業所セレクト ===== */
+.office-select-wrap {
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.office-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #888;
+  pointer-events: none;
+}
+.office-select {
+  width: 100%;
+  padding: 9px 36px 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 13px;
+  font-family: sans-serif;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.office-select:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+}
+.office-select option[value=""][disabled] {
+  color: #bbb;
+}
+
 /* ===== アップロードカテゴリタブ ===== */
 .tabs {
   display: flex;
@@ -1758,10 +1802,13 @@ body {
           <div class="file-browse-label" id="fileBrowseLabel">ファイルが選択されていません</div>
           <input type="file" id="fileInput" multiple accept="image/*,application/pdf,.html,.htm" style="display:none;" onchange="onFileInputChange(this.files)" />
         </div>
-<select id="office">
-  <option value="" disabled selected>事業所を選択してください</option>
-  <option value="yasashie">やさしえ</option>
-</select>
+        <!-- 事業所選択 -->
+        <div class="office-select-wrap">
+          <select id="office" class="office-select">
+            <option value="" disabled selected>事業所を選択してください</option>
+            <option value="yasashie">やさしえ</option>
+          </select>
+        </div>
         <!-- 切り替えタブ-->
         <div class="tabs">
           <button type="button" class="tab active" data-category="assets">素材</button>
