@@ -2338,25 +2338,23 @@ async function executeUpload() {
   progressWrap.classList.add("visible");
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
+  progressWrap.classList.add("visible");
+  progressBar.style.width = "0%";
+  progressText.textContent = "0%";
 
-  // 👇 ここで1回だけ取得（安定）
-  const selectedCategory =
-    document.querySelector(".tab.active")?.dataset.category || "assets";
-    const categoryMap = {
-  web: "サイト",
-  print: "紙媒体",
-  assets: "素材"
-};
+  const office = document.getElementById("office").value;
+  if (!office) {
+    alert("事業所を選択してください");
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> アップロードする`;
+    return;
+  }
 
-const selectedCategoryJP = categoryMap[selectedCategory];
-    const office = document.getElementById("office").value;
+  const selectedCategory = document.querySelector(".tab.active")?.dataset.category || "assets";
+  const categoryMap = { web: "サイト", print: "紙媒体", assets: "素材", vi: "VI管理" };
+  const selectedCategoryJP = categoryMap[selectedCategory] || selectedCategory;
 
-if (!office) {
-  alert("事業所を選択してください");
-  return;
-}
-
-  console.log("選択カテゴリ:", selectedCategory);
+  console.log("選択カテゴリ:", selectedCategory, "事業所:", office);
 
   const total = uploadFiles.length;
   let done = 0;
@@ -2370,7 +2368,7 @@ const rawPath = (file._s3path && file._s3path !== "undefined")
       const baseKey = buildS3Key(rawPath);
 console.log("rawPath:", rawPath);
       // 👇 最終パス
-      const s3Key = `${selectedCategoryJP}/${officeJP}/${baseKey}`;
+      const s3Key = `${selectedCategoryJP}/${office}/${baseKey}`;
 
       console.log("S3パス:", s3Key);
 
