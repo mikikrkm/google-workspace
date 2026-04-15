@@ -3944,9 +3944,9 @@ function renderDlGrid(data) {
     const card = document.createElement("div");
     card.className = "dl-grid-card" + (dlChecked.has(item.id) ? " checked" : "");
     card.dataset.id = item.id;
-    // 品番IDを取得（partNumberDataから照合）
+    // 品番IDを取得（partNumberDataから照合、なければ仮IDを生成）
     const pnEntry = partNumberData.find(p => p.name === item.name);
-    const pnId = pnEntry ? pnEntry.id : "";
+    const pnId = pnEntry ? pnEntry.id : `PHO_${String(item.id).padStart(6, "0")}`;
     card.innerHTML = `
       <div class="dl-grid-thumb-wrap">
         <img src="${item.src}" alt="${item.name}" onerror="this.style.display='none'" />
