@@ -1159,6 +1159,25 @@ body {
 /* テーブル非表示切替 */
 .pn-table-wrap.hidden { display: none; }
 
+/* 品番削除ボタン */
+.pn-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 5px;
+  border: 1px solid #f5c0b8;
+  background: white;
+  color: #e03030;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.pn-delete-btn:hover { background: #fff0f0; border-color: #e03030; }
+
+/* 品番削除確認モーダル */
+#pnDeleteModal .modal-box { max-width: 400px; }
+
 /* ===== アップロードカテゴリタブ ===== */
 .tabs {
   display: flex;
@@ -2269,6 +2288,7 @@ body {
                 <th>事業所</th>
                 <th>登録日</th>
                 <th>更新日</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="pnTableBody"></tbody>
