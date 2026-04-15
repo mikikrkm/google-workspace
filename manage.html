@@ -2266,7 +2266,6 @@ function buildS3Key(filePath) {
 }
 
 // アップロード実行（実API）
-// アップロード実行（実API）
 async function executeUpload() {
   if (uploadFiles.length === 0) return;
 
@@ -2300,9 +2299,11 @@ async function executeUpload() {
 
   for (const file of uploadFiles) {
     try {
-      const rawPath = file._s3path || file.name;
+const rawPath = (file._s3path && file._s3path !== "undefined")
+  ? file._s3path
+  : file.name;
       const baseKey = buildS3Key(rawPath);
-
+console.log("rawPath:", rawPath);
       // 👇 最終パス
       const s3Key = `${selectedCategory}/${baseKey}`;
 
