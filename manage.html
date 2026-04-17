@@ -255,6 +255,126 @@ body {
 .filter-toggle-btn:hover { background: #f0f0f0; border-color: #aaa; }
 .filter-toggle-btn.active { background: #555; color: white; border-color: #555; }
 
+/* ===== 絞り込みパネル（search.html と同様） ===== */
+.filter-panel {
+  display: none;
+  position: fixed;
+  top: 56px; /* ヘッダー高さ分 */
+  left: 0;
+  width: 240px;
+  height: calc(100vh - 56px);
+  background: #f0f0f0;
+  border-right: 1px solid #ddd;
+  z-index: 400;
+  overflow-y: auto;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.filter-panel.open {
+  display: block;
+  transform: translateX(0);
+}
+.filter-panel-inner {
+  padding: 20px 16px;
+}
+.fp-section {
+  margin-bottom: 24px;
+}
+.fp-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.fp-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fp-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.fp-btn:hover { background: #e0e0e0; }
+.fp-btn.active { background: #555; color: white; border-color: #555; }
+
+.bg-btn-group {
+  display: flex;
+  gap: 8px;
+}
+.bg-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #444;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.bg-btn:hover { background: #e0e0e0; }
+.bg-btn.active { background: #555; color: white; border-color: #555; }
+.bg-btn.transparent-btn {
+  background: repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 0 0 / 12px 12px;
+  color: #333;
+}
+.bg-btn.transparent-btn.active { outline: 2px solid #555; }
+
+.color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: #333; transform: scale(1.15); }
+.color-swatch.clear {
+  background: white;
+  border: 2px solid #ccc;
+  position: relative;
+}
+.color-swatch.clear::after {
+  content: "×";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #aaa;
+  line-height: 24px;
+  text-align: center;
+}
+
+/* フィルターパネル用オーバーレイ */
+.filter-panel-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 399;
+}
+.filter-panel-overlay.open { display: block; }
+
 /* アクションタブ（リストパネル下部） */
 .list-action-tab-bar {
   display: flex;
@@ -2431,6 +2551,58 @@ body {
   </div>
 </div>
 
+<!-- フィルターパネルオーバーレイ（クリックで閉じる） -->
+<div class="filter-panel-overlay" id="filterPanelOverlay" onclick="toggleFilterPanel()"></div>
+
+<!-- ===== 絞り込みパネル ===== -->
+<div class="filter-panel" id="filterPanel">
+  <div class="filter-panel-inner">
+
+    <!-- サブカテゴリ -->
+    <div class="fp-section">
+      <div class="fp-title">サブカテゴリ</div>
+      <div class="fp-btn-group" id="subcatGroup">
+        <div class="fp-btn active" data-subcat="all" onclick="setSubcat('all', this)">すべて</div>
+        <div class="fp-btn" data-subcat="photo" onclick="setSubcat('photo', this)">写真</div>
+        <div class="fp-btn" data-subcat="illust" onclick="setSubcat('illust', this)">イラスト</div>
+        <div class="fp-btn" data-subcat="apbook" onclick="setSubcat('apbook', this)">APブック</div>
+        <div class="fp-btn" data-subcat="flyer" onclick="setSubcat('flyer', this)">チラシ</div>
+        <div class="fp-btn" data-subcat="lp" onclick="setSubcat('lp', this)">LP</div>
+      </div>
+    </div>
+
+    <!-- 背景色 -->
+    <div class="fp-section">
+      <div class="fp-title">背景色</div>
+      <div class="bg-btn-group" id="bgGroup">
+        <div class="bg-btn active" data-bg="all" onclick="setBg('all', this)">すべて</div>
+        <div class="bg-btn transparent-btn" data-bg="transparent" onclick="setBg('transparent', this)"></div>
+        <div class="bg-btn" data-bg="white" onclick="setBg('white', this)" style="background:white;">白</div>
+      </div>
+    </div>
+
+    <!-- カラーパレット -->
+    <div class="fp-section">
+      <div class="fp-title">カラー</div>
+      <div class="color-palette" id="colorPalette">
+        <div class="color-swatch clear" data-color="all" onclick="setColor('all', this)" title="クリア"></div>
+        <div class="color-swatch" data-color="red"    onclick="setColor('red', this)"    style="background:#e74c3c;" title="赤"></div>
+        <div class="color-swatch" data-color="orange" onclick="setColor('orange', this)" style="background:#e67e22;" title="オレンジ"></div>
+        <div class="color-swatch" data-color="yellow" onclick="setColor('yellow', this)" style="background:#f1c40f;" title="黄"></div>
+        <div class="color-swatch" data-color="green"  onclick="setColor('green', this)"  style="background:#2ecc71;" title="緑"></div>
+        <div class="color-swatch" data-color="blue"   onclick="setColor('blue', this)"   style="background:#3498db;" title="青"></div>
+        <div class="color-swatch" data-color="purple" onclick="setColor('purple', this)" style="background:#9b59b6;" title="紫"></div>
+        <div class="color-swatch" data-color="pink"   onclick="setColor('pink', this)"   style="background:#e91e8c;" title="ピンク"></div>
+        <div class="color-swatch" data-color="brown"  onclick="setColor('brown', this)"  style="background:#795548;" title="茶"></div>
+        <div class="color-swatch" data-color="gray"   onclick="setColor('gray', this)"   style="background:#95a5a6;" title="グレー"></div>
+        <div class="color-swatch" data-color="black"  onclick="setColor('black', this)"  style="background:#2c3e50;" title="黒"></div>
+        <div class="color-swatch" data-color="white"  onclick="setColor('white', this)"  style="background:white; border:2px solid #ccc;" title="白"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ===== MAIN AREA ===== -->
 <div class="main-area">
 
@@ -3386,12 +3558,45 @@ function onUploadCancel(){
 /* =====================================================
    絞り込みパネル（search.html と同様）
 ===================================================== */
+let currentSubcat = "all";
+let currentBg     = "all";
+let currentColor  = "all";
+
 function toggleFilterPanel(){
-  const btn = document.getElementById("filterToggleBtn");
-  btn.classList.toggle("active");
-  const isActive = btn.classList.contains("active");
-  showToast(isActive ? "絞り込み：タグで絞り込み中" : "絞り込みを解除しました");
-  // 将来的にフィルターパネルを追加する場合はここで開閉処理を追加
+  const panel   = document.getElementById("filterPanel");
+  const btn     = document.getElementById("filterToggleBtn");
+  const overlay = document.getElementById("filterPanelOverlay");
+  const isOpen  = panel.classList.contains("open");
+  if(isOpen){
+    panel.classList.remove("open");
+    btn.classList.remove("active");
+    overlay.classList.remove("open");
+  } else {
+    panel.classList.add("open");
+    btn.classList.add("active");
+    overlay.classList.add("open");
+  }
+}
+
+function setSubcat(val, el){
+  currentSubcat = val;
+  document.querySelectorAll("#subcatGroup .fp-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  renderList();
+}
+
+function setBg(val, el){
+  currentBg = val;
+  document.querySelectorAll("#bgGroup .bg-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  renderList();
+}
+
+function setColor(val, el){
+  currentColor = val;
+  document.querySelectorAll("#colorPalette .color-swatch").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  renderList();
 }
 
 /* =====================================================
@@ -3443,7 +3648,10 @@ function onSearchInput(keyword){
 ===================================================== */
 function getFiltered(){
   let data = materials;
-  if(currentTag !== "all") data = data.filter(i => i.tag === currentTag);
+  if(currentTag    !== "all") data = data.filter(i => i.tag    === currentTag);
+  if(currentSubcat !== "all") data = data.filter(i => i.subcat === currentSubcat);
+  if(currentBg     !== "all") data = data.filter(i => i.bg     === currentBg);
+  if(currentColor  !== "all") data = data.filter(i => i.color  === currentColor);
   if(currentKeyword) data = data.filter(i =>
     i.name.includes(currentKeyword) || i.tag.includes(currentKeyword) || i.ext.includes(currentKeyword.toUpperCase())
   );
